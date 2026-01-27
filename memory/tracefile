@@ -1,0 +1,7 @@
+READ 64 ... okay (P0, S0)
+READ 401 ... okay (P0, S0)
+READ 9c4 ... okay (P0, S0)
+READ fa0 ... okay (P0, S0)
+WRITE 1004 ... okay (P0, S1)
+READ 1004 ... okay (P0, S1)
+READ 2000 ... okay (P0, S2)
