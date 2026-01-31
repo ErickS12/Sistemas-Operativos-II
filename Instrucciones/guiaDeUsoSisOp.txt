@@ -28,10 +28,15 @@ Solo necesitas hacer esto una vez al principio:
    git clone [LINK_DEL_REPO]
 
 2. Entrar a la carpeta:
-   cd [NOMBRE_CARPETA]
 
-3. Moverte a tu rama personal (Ejemplo: si eres Eduardo):
-   git checkout eduardo
+3. Crear y entrar a tu rama personal:
+   git switch -c [TU_NOMBRE]
+
+   /* NOTA: La bandera "-c" significa "Create". 
+      Esto crea la rama y te mete en ella automáticamente. */
+
+   /* NOTA: no hagan el paso 3 porque ya les cree la rama a todos, lo pueden
+      verificar con "git branch -a" en terminal.  */
 
 ----------------------------------------------------------------
 PASO 2: RUTINA DIARIA (CADA VEZ QUE PROGRAMES)
@@ -39,7 +44,7 @@ PASO 2: RUTINA DIARIA (CADA VEZ QUE PROGRAMES)
 Antes de escribir una sola línea de código, actualízate:
 
 1. Asegúrate de estar en tu rama:
-   git checkout [TU_NOMBRE]
+   git switch [TU_NOMBRE]
 
 2. Trae lo nuevo que hayan hecho los demás:
    git pull origin main
