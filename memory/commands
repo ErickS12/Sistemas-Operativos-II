@@ -17,6 +17,6 @@ PÁGINA 15 [Rango Total: E000 - EFFF]
 WRITE hex D000-DFFF // Rango válido (abarca una página completa)
 WRITE hex E7FF // Dirección válida  (dentro de la página 15, segmento 1)
 WRITE hex D800-EBFF // Rango válido (dentro de las páginas 14, segmentos 2 y 3, y página 15, segmentos 0, 1 y 2)
-//WRITE hex FFFFFF // Dirección fuera de rango
+WRITE hex FFFFFF // Dirección fuera de rango
 //WRITE hex D800-3DFF // Rango inválido (inicio mayor que final)
 //WRITE hex 20000 // Rango inválido (estamos en la pag 33)

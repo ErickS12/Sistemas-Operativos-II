@@ -19,7 +19,7 @@ public class Kernel extends Thread {
   public int runs;
   public int runcycles;
   public long block = (int) Math.pow(2, 12);
-  public static byte addressradix = 10;
+  public static byte addressradix = 16;
 
   public void init(String commands, String config) {
     File f = new File(commands);
@@ -215,7 +215,6 @@ public class Kernel extends Thread {
                     Long.toHexString(address_limit) + ").");
                 System.exit(-1);
               }
-              // ------------------------------------------------------------------
               // --- VALIDACIÓN DE TAMAÑO (NUEVO) ---
               // Verifica que el rango no sea mayor al tamaño de una página (block)
               // Cambia el if para que solo sea una advertencia o permite el rango
@@ -261,7 +260,7 @@ public class Kernel extends Thread {
         map_count++;
       // ... (duplicate check) ...
 
-      // (map_count < (virtPageNum + 1) / 2 && page.physical == -1) esto iba adentro
+      // (map_count < (virtPageNum + 1) / 2 && page.physical == -1)  adentro
       // del if
       if (page.physical == -1) {
         page.physical = i;
