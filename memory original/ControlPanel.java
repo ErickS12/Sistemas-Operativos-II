@@ -76,6 +76,10 @@ public class ControlPanel extends Frame
   Label timeValueLabel = new Label("0" , Label.LEFT) ;
   Label instructionValueLabel = new Label("NONE" , Label.LEFT) ;
   Label addressValueLabel = new Label("NULL" , Label.LEFT) ;
+
+  //Nuevo
+  Label paginasValueLabel = new Label("", 0);
+
   Label pageFaultValueLabel = new Label("NO" , Label.LEFT) ;
   Label virtualPageValueLabel = new Label("x" , Label.LEFT) ;
   Label physicalPageValueLabel = new Label("0" , Label.LEFT) ;
@@ -580,6 +584,10 @@ public class ControlPanel extends Frame
     Label addressLabel = new Label("address: " , Label.LEFT) ;
     addressLabel.reshape(285,60+25,85,15);
     add(addressLabel);
+
+    //Nuevo
+    this.paginasValueLabel.reshape(285, 100, 230, 15);
+    this.add(this.paginasValueLabel);
 
     Label pageFaultLabel = new Label("page fault: " , Label.LEFT) ;
     pageFaultLabel.reshape(285,90+25,100,15);
