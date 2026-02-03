@@ -200,14 +200,12 @@ public class Kernel extends Thread {
               startAddr = Long.parseLong(parts[0], radix);
               endAddr = Long.parseLong(parts[1], radix);
 
-              // --- AGREGAR ESTA VALIDACIÓN AQUÍ ---
               if (startAddr > endAddr) {
                 System.out
                     .println("Error: Rango inválido en '" + line + "'. El inicio no puede ser mayor que el final.");
                 System.exit(-1); // Salir del programa con código de error
               }
 
-              // --- [FALTA ESTO] AGREGAR AQUÍ LA VALIDACIÓN DE LÍMITE SUPERIOR ---
               // Esto evita que te salga (P33, S0) o errores de memoria
               if (endAddr > address_limit) {
                 System.out.println("Error: La dirección final " + Long.toHexString(endAddr) +
@@ -215,7 +213,6 @@ public class Kernel extends Thread {
                     Long.toHexString(address_limit) + ").");
                 System.exit(-1);
               }
-              // --- VALIDACIÓN DE TAMAÑO (NUEVO) ---
               // Verifica que el rango no sea mayor al tamaño de una página (block)
               // Cambia el if para que solo sea una advertencia o permite el rango
               long rangeSize = endAddr - startAddr;
@@ -382,6 +379,9 @@ public class Kernel extends Thread {
       }
       resultStr += ") ";
     }
+
+    System.out.println(resultStr);
+
 
     controlPanel.paginasValueLabel.setText(resultStr);
 
