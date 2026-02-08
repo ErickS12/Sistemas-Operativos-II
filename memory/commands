@@ -1,0 +1,23 @@
+/* 
+Algunas paginas con sus segmentos para ejemplo:
+
+PÁGINA 14 [Rango Total: D000 - DFFF]
+   Segmento 0: D000 - D3FF
+   Segmento 1: D400 - D7FF
+   Segmento 2: D800 - DBFF
+   Segmento 3: DC00 - DFFF
+
+PÁGINA 15 [Rango Total: E000 - EFFF]
+   Segmento 0: E000 - E3FF
+   Segmento 1: E400 - E7FF
+   Segmento 2: E800 - EBFF
+   Segmento 3: EC00 - EFFF
+*/
+
+WRITE hex 1000-2fff
+//WRITE hex D000-DFFF // Rango válido (abarca una página completa)
+//WRITE hex E7FF // Dirección válida  (dentro de la página 15, segmento 1)
+//WRITE hex D800-EBFF // Rango válido (dentro de las páginas 14, segmentos 2 y 3, y página 15, segmentos 0, 1 y 2)
+//WRITE hex FFFFFF // Dirección fuera de rango
+//WRITE hex D800-3DFF // Rango inválido (inicio mayor que final)
+//WRITE hex 20000 // Rango inválido (estamos en la pag 33)
