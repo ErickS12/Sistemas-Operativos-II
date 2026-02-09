@@ -14,10 +14,26 @@ PÁGINA 15 [Rango Total: E000 - EFFF]
    Segmento 3: EC00 - EFFF
 */
 
-WRITE hex 1000-2fff
+//WRITE hex 1000-2fff
 //WRITE hex D000-DFFF // Rango válido (abarca una página completa)
 //WRITE hex E7FF // Dirección válida  (dentro de la página 15, segmento 1)
 //WRITE hex D800-EBFF // Rango válido (dentro de las páginas 14, segmentos 2 y 3, y página 15, segmentos 0, 1 y 2)
 //WRITE hex FFFFFF // Dirección fuera de rango
 //WRITE hex D800-3DFF // Rango inválido (inicio mayor que final)
 //WRITE hex 20000 // Rango inválido (estamos en la pag 33)
+
+READ hex 10-50
+WRITE hex 200-600
+READ hex 1000-1020
+WRITE hex 2000-2050
+READ hex 10-20
+READ hex 10-20
+READ hex 10-20
+WRITE hex 3000-3010
+READ hex 4000-4010
+READ hex 5000-5010
+READ hex 6000-6010
+WRITE hex 10-20
+READ hex 0-FFF
+WRITE hex 7000-7010
+READ hex 10-20

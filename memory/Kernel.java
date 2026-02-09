@@ -340,19 +340,28 @@ public class Kernel extends Thread {
       int s = (int) (offset / segmentSize);
 
       // Validamos segmento
+      // (Aging)
       if (s >= 0 && s < 4 && p >= 0 && p <= virtPageNum) {
+        
+        Page page = (Page) memVector.elementAt(p); // 1. Obtenemos la página primero
+
+        // 2. VERIFICAR SI ESTÁ EN MEMORIA (PAGE FAULT)
+        if (page.physical == -1) {
+            controlPanel.pageFaultValueLabel.setText("YES");
+            // Llamada al archivo externo PageFault.java
+            PageFault.replacePage(memVector, virtPageNum, p, controlPanel);
+        }
+
         if (!touched.containsKey(p))
           touched.put(p, new TreeSet<Integer>());
 
         touched.get(p).add(s);
-
-        Page page = (Page) memVector.elementAt(p);
-
         if (realCmd.startsWith("READ")) {
           page.R = 1;
           page.segR[s] = 1;
         } else {
           page.M = 1;
+          page.R = 1; // <--- Escribir también es referenciar.
           page.segM[s] = 1;
         }
       } else {
@@ -370,7 +379,7 @@ public class Kernel extends Thread {
     String resultStr = "Resultado ";
     for (Map.Entry<Integer, TreeSet<Integer>> entry : touched.entrySet()) {
       int p = entry.getKey();
-      resultStr += "(P" + (p + 1) + ", ";
+      resultStr += "(P" + p + ", ";
       int count = 0;
       for (Integer s : entry.getValue()) {
         resultStr += "S" + s;
@@ -400,9 +409,25 @@ public class Kernel extends Thread {
       System.out.println(logMsg);
 
     // Actualización de tiempos
+    // 4. ACTUALIZACIÓN DE AGING (Bit Shifting)
     for (int k = 0; k < virtPageNum; k++) {
       Page p = (Page) memVector.elementAt(k);
       if (p.physical != -1) {
+        
+        // A) Desplazar a la derecha
+        p.age = p.age >>> 1;
+        
+        // B) Si se usó (R=1), encender el bit de la izquierda
+        if (p.R == 1) {
+            p.age = p.age | 0x80000000;
+            p.R = 0; // Resetear R
+        }
+
+        // C) Imprimir en consola para ver los bits (DEBUG)
+        System.out.println("Page " + p.id + " | Age: " + 
+            String.format("%32s", Integer.toBinaryString(p.age)).replace(' ', '0'));
+
+        // D) Tiempos GUI
         p.inMemTime += 10;
         p.lastTouchTime += 10;
       }
