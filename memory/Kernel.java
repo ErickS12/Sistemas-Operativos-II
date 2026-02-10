@@ -5,7 +5,9 @@ import java.io.*;
 import java.util.*;
 
 public class Kernel extends Thread {
-  private static int virtPageNum = 31; // en ves de 64 pag, solo declaramos 32
+  private static int virtPageNum = 63;
+  private static final int REPORT_LIMIT = 31; // Agregamos una variable global para definir el limite de nuestras
+                                              // operacion e impresiones
   private String output = null;
   private static final String lineSeparator = System.getProperty("line.separator");
   private String command_file;
@@ -257,7 +259,7 @@ public class Kernel extends Thread {
         map_count++;
       // ... (duplicate check) ...
 
-      // (map_count < (virtPageNum + 1) / 2 && page.physical == -1)  adentro
+      // (map_count < (virtPageNum + 1) / 2 && page.physical == -1) adentro
       // del if
       if (page.physical == -1) {
         page.physical = i;
@@ -303,6 +305,7 @@ public class Kernel extends Thread {
     Instruction instruct = (Instruction) instructVector.elementAt(runs);
     String fullCmd = instruct.inst;
     String realCmd = fullCmd;
+    controlPanel.pageFaultValueLabel.setText("NO");
 
     long startAddr = instruct.addr;
     long endAddr = startAddr;
@@ -324,6 +327,8 @@ public class Kernel extends Thread {
       controlPanel.addressValueLabel.setText(
           Long.toString(startAddr, addressradix));
 
+    output = "";
+    boolean[][] usedSegments = new boolean[virtPageNum + 1][4]; // estructura tempora para la fragmentacion interna
     long current = startAddr;
     long segmentSize = block / 4; // 1024 bytes
     TreeMap<Integer, TreeSet<Integer>> touched = new TreeMap<Integer, TreeSet<Integer>>();
@@ -341,15 +346,18 @@ public class Kernel extends Thread {
 
       // Validamos segmento
       // (Aging)
-      if (s >= 0 && s < 4 && p >= 0 && p <= virtPageNum) {
-        
+      if (s >= 0 && s < 4 && p >= 0 && p < virtPageNum) {
+
+        // vemos que pag y segmento es usado
+        usedSegments[p][s] = true;
+
         Page page = (Page) memVector.elementAt(p); // 1. Obtenemos la página primero
 
         // 2. VERIFICAR SI ESTÁ EN MEMORIA (PAGE FAULT)
         if (page.physical == -1) {
-            controlPanel.pageFaultValueLabel.setText("YES");
-            // Llamada al archivo externo PageFault.java
-            PageFault.replacePage(memVector, virtPageNum, p, controlPanel);
+          controlPanel.pageFaultValueLabel.setText("YES");
+          // Llamada al archivo externo PageFault.java
+          PageFault.replacePage(memVector, virtPageNum, p, controlPanel);
         }
 
         if (!touched.containsKey(p))
@@ -375,6 +383,73 @@ public class Kernel extends Thread {
       current += segmentSize;
     }
 
+// Calculamos la fragmentacion interna  
+    
+    int internalFragBytes = 0;
+
+    // BUCLE 1: CALCULAR EL TOTAL (Sumatoria)
+    for (int p = 0; p <= REPORT_LIMIT; p++) {
+        boolean pageUsed = false;
+
+        // 1. Verificamos si la página se usó en esta instrucción
+        for (int s = 0; s < 4; s++) {
+            if (usedSegments[p][s]) {
+                pageUsed = true;
+                break;
+            }
+        }
+
+        // 2. Si se usó, sumamos los segmentos vacíos
+        if (pageUsed) {
+            for (int s = 0; s < 4; s++) {
+                if (!usedSegments[p][s]) { 
+                    internalFragBytes += segmentSize;
+                }
+            }
+        }
+    }
+
+    // Generamos el mensaje que se mostrará
+
+    // 1. Agregamos el total
+    if (output == null) output = ""; // Aseguramos que no sea null
+    output += "Fragmentación interna: " + internalFragBytes + " bytes\n";
+
+    // 2. Agregamos el detalle por página (BUCLE ÚNICO)
+    for (int p = 0; p <= REPORT_LIMIT; p++) {
+        boolean pageUsed = false;
+        
+        // Verificamos uso
+        for (int s = 0; s < 4; s++) {
+            if (usedSegments[p][s]) {
+                pageUsed = true;
+                break;
+            }
+        }
+        
+        // Solo imprimimos detalle si la página fue usada 
+        if (pageUsed) {
+            output += "Página " + p + " segmentos libres: ";
+            for (int s = 0; s < 4; s++) {
+                if (!usedSegments[p][s]) {
+                    output += s + " "; 
+                }
+            }
+            output += "\n";
+        }
+    }
+
+    // Impresion en consola 
+
+    // Si la variable output tiene contenido, lo imprimimos UNA SOLA VEZ:
+    if (output != null && !output.isEmpty()) {
+        System.out.println("------ REPORTE FRAGMENTACIÓN (Paso " + runs + ") ------");
+        System.out.println(output);
+        System.out.println("----------------------------------------------------");
+    }
+
+//---------------------------------------------------------------//
+
     // Construcción del resultado
     String resultStr = "Resultado ";
     for (Map.Entry<Integer, TreeSet<Integer>> entry : touched.entrySet()) {
@@ -390,7 +465,6 @@ public class Kernel extends Thread {
     }
 
     System.out.println(resultStr);
-
 
     controlPanel.paginasValueLabel.setText(resultStr);
 
@@ -410,21 +484,21 @@ public class Kernel extends Thread {
 
     // Actualización de tiempos
     // 4. ACTUALIZACIÓN DE AGING (Bit Shifting)
-    for (int k = 0; k < virtPageNum; k++) {
+    for (int k = 0; k <= REPORT_LIMIT; k++) {
       Page p = (Page) memVector.elementAt(k);
       if (p.physical != -1) {
-        
+
         // A) Desplazar a la derecha
         p.age = p.age >>> 1;
-        
+
         // B) Si se usó (R=1), encender el bit de la izquierda
         if (p.R == 1) {
-            p.age = p.age | 0x80000000;
-            p.R = 0; // Resetear R
+          p.age = p.age | 0x80000000;
+          p.R = 0; // Resetear R
         }
 
         // C) Imprimir en consola para ver los bits (DEBUG)
-        System.out.println("Page " + p.id + " | Age: " + 
+        System.out.println("Page " + p.id + " | Age: " +
             String.format("%32s", Integer.toBinaryString(p.age)).replace(' ', '0'));
 
         // D) Tiempos GUI
