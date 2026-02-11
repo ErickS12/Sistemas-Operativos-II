@@ -253,27 +253,53 @@ public class Kernel extends Thread {
     }
     runs = 0;
     // ... (map_count logic) ...
-    for (i = 0; i < virtPageNum; i++) {
-      Page page = (Page) memVector.elementAt(i);
-      if (page.physical != -1)
-        map_count++;
-      // ... (duplicate check) ...
+    //for (i = 0; i < virtPageNum; i++) {
+     //Page page = (Page) memVector.elementAt(i);
+     //if (page.physical != -1)
+     //map_count++;
+     //if (page.physical == -1) {
+     //page.physical = i;
+     //map_count++;
+     //}
+     //}
 
-      // (map_count < (virtPageNum + 1) / 2 && page.physical == -1) adentro
-      // del if
-      if (page.physical == -1) {
-        page.physical = i;
-        map_count++;
+    int physicalFrames = 3; // SOLO 3 MARCOS
+    int frame = 0;
+
+    for (int k = 0; k < virtPageNum; k++) {
+    Page page = (Page) memVector.elementAt(k);
+if (frame < physicalFrames) {
+page.physical = frame;
+        frame++;
+      } else {
+        page.physical = -1;
       }
     }
-    // ... (GUI update loop) ...
-    for (i = 0; i < virtPageNum; i++) {
-      Page page = (Page) memVector.elementAt(i);
-      if (page.physical == -1)
-        controlPanel.removePhysicalPage(i);
-      else
+
+     int visualFrame = 0;
+
+for (i = 0; i <= virtPageNum; i++) {
+    Page page = (Page) memVector.elementAt(i);
+
+    if (page.physical != -1) {
         controlPanel.addPhysicalPage(i, page.physical);
+    } else {
+        // Solo para visualización
+        controlPanel.addPhysicalPage(i, i);
+        visualFrame++;
     }
+}
+
+
+
+    // ... (GUI update loop) ...
+    //for (i = 0; i < virtPageNum; i++) {
+      //Page page = (Page) memVector.elementAt(i);
+      //if (page.physical == -1)
+        //controlPanel.removePhysicalPage(i);
+      //else
+        //controlPanel.addPhysicalPage(i, page.physical);
+    //}
   }
 
   // ... (setControlPanel, getPage, printLogFile, run IGUALES) ...
@@ -372,6 +398,7 @@ public class Kernel extends Thread {
           page.R = 1; // <--- Escribir también es referenciar.
           page.segM[s] = 1;
         }
+        controlPanel.paintPage(page);
       } else {
         // --- AGREGAR ESTO PARA CUMPLIR EL REQUERIMIENTO ---
         System.out.println("Error: La dirección " + Long.toHexString(current) +
@@ -383,72 +410,70 @@ public class Kernel extends Thread {
       current += segmentSize;
     }
 
-// Calculamos la fragmentacion interna  
-    
+    // Calculamos la fragmentacion interna
+
     int internalFragBytes = 0;
 
     // BUCLE 1: CALCULAR EL TOTAL (Sumatoria)
-    for (int p = 0; p <= REPORT_LIMIT; p++) {
-        boolean pageUsed = false;
+    for (int p = 0; p < virtPageNum; p++) {
+      boolean pageUsed = false;
+      int segmentosLibre = 0;
 
-        // 1. Verificamos si la página se usó en esta instrucción
-        for (int s = 0; s < 4; s++) {
-            if (usedSegments[p][s]) {
-                pageUsed = true;
-                break;
-            }
+      // 1. Verificamos si la página se usó en esta instrucción
+      for (int s = 0; s < 4; s++) {
+        if (usedSegments[p][s]) {
+          pageUsed = true;
+        } else {
+          segmentosLibre++;
         }
-
-        // 2. Si se usó, sumamos los segmentos vacíos
-        if (pageUsed) {
-            for (int s = 0; s < 4; s++) {
-                if (!usedSegments[p][s]) { 
-                    internalFragBytes += segmentSize;
-                }
-            }
-        }
+      }
+      // 2. Si se usó
+      if (pageUsed) {
+        internalFragBytes += segmentosLibre * segmentSize;
+      }
     }
 
     // Generamos el mensaje que se mostrará
 
     // 1. Agregamos el total
-    if (output == null) output = ""; // Aseguramos que no sea null
+    if (output == null)
+      output = ""; // Aseguramos que no sea null
     output += "Fragmentación interna: " + internalFragBytes + " bytes\n";
 
     // 2. Agregamos el detalle por página (BUCLE ÚNICO)
-    for (int p = 0; p <= REPORT_LIMIT; p++) {
-        boolean pageUsed = false;
-        
-        // Verificamos uso
+    for (int p = 0; p <= virtPageNum; p++) {
+      boolean pageUsed = false;
+
+      // Verificamos uso
+      for (int s = 0; s < 4; s++) {
+        if (usedSegments[p][s]) {
+          pageUsed = true;
+          break;
+        }
+      }
+
+      // Solo imprimimos detalle si la página fue usada
+      if (pageUsed) {
+        output += "Página " + p + " segmentos libres: ";
         for (int s = 0; s < 4; s++) {
-            if (usedSegments[p][s]) {
-                pageUsed = true;
-                break;
-            }
+          if (!usedSegments[p][s]) {
+            output += s + " ";
+          }
         }
-        
-        // Solo imprimimos detalle si la página fue usada 
-        if (pageUsed) {
-            output += "Página " + p + " segmentos libres: ";
-            for (int s = 0; s < 4; s++) {
-                if (!usedSegments[p][s]) {
-                    output += s + " "; 
-                }
-            }
-            output += "\n";
-        }
+        output += "\n";
+      }
     }
 
-    // Impresion en consola 
+    // Impresion en consola
 
     // Si la variable output tiene contenido, lo imprimimos UNA SOLA VEZ:
     if (output != null && !output.isEmpty()) {
-        System.out.println("------ REPORTE FRAGMENTACIÓN (Paso " + runs + ") ------");
-        System.out.println(output);
-        System.out.println("----------------------------------------------------");
+      System.out.println("------ REPORTE FRAGMENTACIÓN (Paso " + runs + ") ------");
+      System.out.println(output);
+      System.out.println("----------------------------------------------------");
     }
 
-//---------------------------------------------------------------//
+    // ---------------------------------------------------------------//
 
     // Construcción del resultado
     String resultStr = "Resultado ";
@@ -484,22 +509,24 @@ public class Kernel extends Thread {
 
     // Actualización de tiempos
     // 4. ACTUALIZACIÓN DE AGING (Bit Shifting)
-    for (int k = 0; k <= REPORT_LIMIT; k++) {
+    for (int k = 0; k < virtPageNum; k++) {
       Page p = (Page) memVector.elementAt(k);
       if (p.physical != -1) {
 
         // A) Desplazar a la derecha
-        p.age = p.age >>> 1;
+        p.age = (p.age >>> 1) & 0xFF;
 
         // B) Si se usó (R=1), encender el bit de la izquierda
         if (p.R == 1) {
-          p.age = p.age | 0x80000000;
+          p.age = p.age | 0x80;
           p.R = 0; // Resetear R
         }
 
         // C) Imprimir en consola para ver los bits (DEBUG)
-        System.out.println("Page " + p.id + " | Age: " +
-            String.format("%32s", Integer.toBinaryString(p.age)).replace(' ', '0'));
+        System.out.println(
+            "Page " + p.id + " | Age: " +
+                String.format("%8s",
+                    Integer.toBinaryString(p.age & 0xFF)).replace(' ', '0'));
 
         // D) Tiempos GUI
         p.inMemTime += 10;
@@ -509,6 +536,7 @@ public class Kernel extends Thread {
 
     runs++;
     controlPanel.timeValueLabel.setText(Integer.toString(runs * 10) + " (ns)");
+
   }
 
   public void reset() {
