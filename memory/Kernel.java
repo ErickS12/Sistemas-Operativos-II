@@ -6,8 +6,7 @@ import java.util.*;
 
 public class Kernel extends Thread {
   private static int virtPageNum = 63;
-  private static final int REPORT_LIMIT = 31; // Agregamos una variable global para definir el limite de nuestras
-                                              // operacion e impresiones
+  private static final int REPORT_LIMIT = 31; // Agregamos una variable global para definir el limite de nuestras operacion e impresiones
   private String output = null;
   private static final String lineSeparator = System.getProperty("line.separator");
   private String command_file;
@@ -241,7 +240,6 @@ public class Kernel extends Thread {
     } catch (IOException e) {
       /* Handle exceptions */ }
 
-    // ... (resto de init igual: runcycles, map_count, controlPanel setup) ...
     runcycles = instructVector.size();
     if (runcycles < 1) {
       System.out.println("Error: no instructions");
@@ -363,11 +361,11 @@ public class Kernel extends Thread {
         if (!touched.containsKey(p))
           touched.put(p, new TreeSet<Integer>());
 
-        touched.get(p).add(s);
+        touched.get(p).add(s);  //READ
         if (realCmd.startsWith("READ")) {
-          page.R = 1;
-          page.segR[s] = 1;
-        } else {
+          page.R = 1;      //MARCAMOS EL USO 
+          page.segR[s] = 1;  //MARCAMOS EL SEGMENTO EN ESPECIFICO QUE SE USO
+        } else {  //WRITe
           page.M = 1;
           page.R = 1; // <--- Escribir también es referenciar.
           page.segM[s] = 1;
@@ -415,7 +413,7 @@ public class Kernel extends Thread {
     if (output == null) output = ""; // Aseguramos que no sea null
     output += "Fragmentación interna: " + internalFragBytes + " bytes\n";
 
-    // 2. Agregamos el detalle por página (BUCLE ÚNICO)
+    // 2. Bucle para encontrar que segmento está libre
     for (int p = 0; p <= REPORT_LIMIT; p++) {
         boolean pageUsed = false;
         
@@ -441,7 +439,7 @@ public class Kernel extends Thread {
 
     // Impresion en consola 
 
-    // Si la variable output tiene contenido, lo imprimimos UNA SOLA VEZ:
+    // Si la variable output tiene contenido, lo imprimimos 
     if (output != null && !output.isEmpty()) {
         System.out.println("------ REPORTE FRAGMENTACIÓN (Paso " + runs + ") ------");
         System.out.println(output);
