@@ -5,8 +5,8 @@ import java.io.*;
 import java.util.*;
 
 public class Kernel extends Thread {
-  private static int virtPageNum = 63;//31; //32 pag virtuales. 
-  private static final int PHYSICAL_FRAMES = 32;//16; 
+  private static int virtPageNum = 63;// 31; //32 pag virtuales.
+  private static final int PHYSICAL_FRAMES = 32;// 16;
   private String output = null;
   private static final String lineSeparator = System.getProperty("line.separator");
   private String command_file;
@@ -260,32 +260,32 @@ public class Kernel extends Thread {
     // map_count++;
     // }
     // }
-/* 
-    int physicalFrames = 16; // SOLO 3 MARCOS
-    int frame = 0;
+    /*
+     * int physicalFrames = 16; // SOLO 3 MARCOS
+     * int frame = 0;
+     * 
+     * for (int k = 0; k <= virtPageNum; k++) {
+     * Page page = (Page) memVector.elementAt(k);
+     * if (frame < physicalFrames) {
+     * page.physical = frame;
+     * frame++;
+     * } else {
+     * page.physical = -1;
+     * }
+     * }
+     */
 
-    for (int k = 0; k <= virtPageNum; k++) {
-      Page page = (Page) memVector.elementAt(k);
-      if (frame < physicalFrames) {
-        page.physical = frame;
+    // ------------------------- SE CAMBIÓ ESTO -------------------------//
+    int frame = 0;
+    for (i = 0; i <= virtPageNum; i++) {
+      Page page = (Page) memVector.elementAt(i);
+      if (frame < PHYSICAL_FRAMES) {
+        page.physical = frame; // marco físico real
         frame++;
       } else {
-        page.physical = -1;
+        page.physical = -1; // fuera de memoria → page fault
       }
     }
-*/
-
-//------------------------- SE CAMBIÓ ESTO -------------------------//
-int frame = 0;
-for (i = 0; i <= virtPageNum; i++) {
-  Page page = (Page) memVector.elementAt(i);
-  if (frame < PHYSICAL_FRAMES) {
-    page.physical = frame;   // marco físico real
-    frame++;
-  } else {
-    page.physical = -1;      // fuera de memoria → page fault
-  }
-}
 
     int visualFrame = 0;
 
@@ -296,7 +296,7 @@ for (i = 0; i <= virtPageNum; i++) {
         controlPanel.addPhysicalPage(i, page.physical);
       } else {
         // Solo para visualización
-         controlPanel.removePhysicalPage(i);
+        controlPanel.removePhysicalPage(i);
         visualFrame++;
       }
     }
@@ -334,6 +334,47 @@ for (i = 0; i <= virtPageNum; i++) {
       step();
     }
   }
+
+  //Metodo que imprime segmentos de una pagina con su estado (ocupado o libre)
+  public String obtenerEstadosSegmentosPagina(int pageNum) {
+    Page page = (Page) memVector.elementAt(pageNum);
+    StringBuilder sb = new StringBuilder();
+
+    long segmentSize = block / 4; // 1024 bytes
+    for (int s = 0; s < 4; s++) {
+      long inicio = page.low + (s * segmentSize);
+      long fin = inicio + segmentSize - 1;
+      boolean isUsed = (page.segR[s] == 1 || page.segM[s] == 1);
+
+      sb.append(
+          "Segmento " + s + ": " +
+              String.format("%04X", inicio) + " - " +
+              String.format("%04X", fin) + " " +
+              (isUsed ? "Ocupado" : "Libre") +
+              "\n");
+    }
+    return sb.toString();
+  }
+
+  private String generarTextoAging() {
+    StringBuilder sb = new StringBuilder();
+
+    for (int k = 0; k <= virtPageNum; k++) {
+        Page p = (Page) memVector.elementAt(k);
+
+        if (p.physical != -1) {
+            sb.append("Page ")
+              .append(p.id)
+              .append(" | Age: ")
+              .append(String.format("%8s",
+                  Integer.toBinaryString(p.age & 0xFF))
+                  .replace(' ', '0'))
+              .append("\n");
+        }
+    }
+
+    return sb.toString();
+}
 
   // --- STEP MODIFICADO PARA RANGOS ---
   public void step() {
@@ -398,16 +439,19 @@ for (i = 0; i <= virtPageNum; i++) {
         if (!touched.containsKey(p))
           touched.put(p, new TreeSet<Integer>());
 
-        touched.get(p).add(s);  //READ
+        touched.get(p).add(s); // READ
         if (realCmd.startsWith("READ")) {
-          page.R = 1;      //MARCAMOS EL USO 
-          page.segR[s] = 1;  //MARCAMOS EL SEGMENTO EN ESPECIFICO QUE SE USO
-        } else {  //WRITe
+          page.R = 1; // MARCAMOS EL USO
+          page.segR[s] = 1; // MARCAMOS EL SEGMENTO EN ESPECIFICO QUE SE USO
+        } else { // WRITe
           page.M = 1;
           page.R = 1; // <--- Escribir también es referenciar.
           page.segM[s] = 1;
         }
         controlPanel.paintPage(page);
+        controlPanel.actualizarSegmentos(
+            obtenerEstadosSegmentosPagina(p)); // Imprimimos el área de segmentos con el estado actual
+
       } else {
         // --- AGREGAR ESTO PARA CUMPLIR EL REQUERIMIENTO ---
         System.out.println("Error: La dirección " + Long.toHexString(current) +
@@ -471,11 +515,12 @@ for (i = 0; i <= virtPageNum; i++) {
         }
         output += "\n";
       }
+      
     }
 
     // Impresion en consola
 
-    // Si la variable output tiene contenido, lo imprimimos 
+    // Si la variable output tiene contenido, lo imprimimos
     if (output != null && !output.isEmpty()) {
       System.out.println("------ REPORTE FRAGMENTACIÓN (Paso " + runs + ") ------");
       System.out.println(output);
@@ -541,6 +586,10 @@ for (i = 0; i <= virtPageNum; i++) {
         p.inMemTime += 10;
         p.lastTouchTime += 10;
       }
+      controlPanel.actualizarAging(
+    generarTextoAging()
+);
+
     }
 
     runs++;
@@ -566,5 +615,6 @@ for (i = 0; i <= virtPageNum; i++) {
 
     controlPanel.highValueLabel.setText("0");
     init(command_file, config_file);
+
   }
 }
