@@ -1,12 +1,9 @@
-
-//Final
 import java.lang.Thread;
 import java.io.*;
 import java.util.*;
 
 public class Kernel extends Thread {
-  private static int virtPageNum = 63;// 31; //32 pag virtuales.
-  private static final int PHYSICAL_FRAMES = 32;// 16;
+  private static int virtPageNum = 63;
   private String output = null;
   private static final String lineSeparator = System.getProperty("line.separator");
   private String command_file;
@@ -20,7 +17,7 @@ public class Kernel extends Thread {
   public int runs;
   public int runcycles;
   public long block = (int) Math.pow(2, 12);
-  public static byte addressradix = 16;
+  public static byte addressradix = 10;
 
   public void init(String commands, String config) {
     File f = new File(commands);
@@ -43,7 +40,7 @@ public class Kernel extends Thread {
     long high = 0;
     long low = 0;
     long addr = 0;
-    long address_limit = (block * (virtPageNum + 1)) - 1;
+    long address_limit = (block * virtPageNum + 1) - 1;
 
     if (config != null) {
       f = new File(config);
@@ -86,7 +83,7 @@ public class Kernel extends Thread {
                 physical = Common.s2i(tmp);
               }
               if ((0 > id || id > virtPageNum) || (-1 > physical || physical > ((virtPageNum - 1) / 2))) {
-                System.out.println("MemoryManagement: Valor de página no válido en " + config);
+                System.out.println("MemoryManagement: Invalid page value in " + config);
                 System.exit(-1);
               }
               R = Common.s2b(st.nextToken());
@@ -201,24 +198,13 @@ public class Kernel extends Thread {
               startAddr = Long.parseLong(parts[0], radix);
               endAddr = Long.parseLong(parts[1], radix);
 
-              if (startAddr > endAddr) {
-                System.out
-                    .println("Error: Rango inválido en '" + line + "'. El inicio no puede ser mayor que el final.");
-                System.exit(-1); // Salir del programa con código de error
-              }
-
-              // Esto evita que te salga (P33, S0) o errores de memoria
-              if (endAddr > address_limit) {
-                System.out.println("Error: La dirección final " + Long.toHexString(endAddr) +
-                    " excede el límite de memoria física (" +
-                    Long.toHexString(address_limit) + ").");
-                System.exit(-1);
-              }
+              // --- VALIDACIÓN DE TAMAÑO (NUEVO) ---
               // Verifica que el rango no sea mayor al tamaño de una página (block)
               // Cambia el if para que solo sea una advertencia o permite el rango
               long rangeSize = endAddr - startAddr;
               if (rangeSize > block) {
                 System.out.println("Aviso: El rango es extenso, se procesará como direcciones relativas.");
+                // Eliminamos el System.exit(-1); para que el programa continúe
               }
               // ------------------------------------
 
@@ -230,7 +216,8 @@ public class Kernel extends Thread {
 
             // ESTA PARTE IMPRIME LA PARTE DE LAS PAGINAS
             if (0 > addr || addr > address_limit) {
-              System.out.println("MemoryManagement: " + addr + ", Dirección fuera de rango en " + commands);
+              System.out.println("MemoryManagement: " + addr + ", Address out of range in " + commands);
+              System.exit(-1);
             }
             instructVector.addElement(new Instruction(command, addr));
           }
@@ -240,6 +227,7 @@ public class Kernel extends Thread {
     } catch (IOException e) {
       /* Handle exceptions */ }
 
+    // ... (resto de init igual: runcycles, map_count, controlPanel setup) ...
     runcycles = instructVector.size();
     if (runcycles < 1) {
       System.out.println("Error: no instructions");
@@ -251,64 +239,24 @@ public class Kernel extends Thread {
     }
     runs = 0;
     // ... (map_count logic) ...
-    // for (i = 0; i < virtPageNum; i++) {
-    // Page page = (Page) memVector.elementAt(i);
-    // if (page.physical != -1)
-    // map_count++;
-    // if (page.physical == -1) {
-    // page.physical = i;
-    // map_count++;
-    // }
-    // }
-    /*
-     * int physicalFrames = 16; // SOLO 3 MARCOS
-     * int frame = 0;
-     * 
-     * for (int k = 0; k <= virtPageNum; k++) {
-     * Page page = (Page) memVector.elementAt(k);
-     * if (frame < physicalFrames) {
-     * page.physical = frame;
-     * frame++;
-     * } else {
-     * page.physical = -1;
-     * }
-     * }
-     */
-
-    // ------------------------- SE CAMBIÓ ESTO -------------------------//
-    int frame = 0;
-    for (i = 0; i <= virtPageNum; i++) {
+    for (i = 0; i < virtPageNum; i++) {
       Page page = (Page) memVector.elementAt(i);
-      if (frame < PHYSICAL_FRAMES) {
-        page.physical = frame; // marco físico real
-        frame++;
-      } else {
-        page.physical = -1; // fuera de memoria → page fault
+      if (page.physical != -1)
+        map_count++;
+      // ... (duplicate check) ...
+      if (map_count < (virtPageNum + 1) / 2 && page.physical == -1) {
+        page.physical = i;
+        map_count++;
       }
     }
-
-    int visualFrame = 0;
-
-    for (i = 0; i <= virtPageNum; i++) {
-      Page page = (Page) memVector.elementAt(i);
-
-      if (page.physical != -1) {
-        controlPanel.addPhysicalPage(i, page.physical);
-      } else {
-        // Solo para visualización
-        controlPanel.removePhysicalPage(i);
-        visualFrame++;
-      }
-    }
-
     // ... (GUI update loop) ...
-    // for (i = 0; i < virtPageNum; i++) {
-    // Page page = (Page) memVector.elementAt(i);
-    // if (page.physical == -1)
-    // controlPanel.removePhysicalPage(i);
-    // else
-    // controlPanel.addPhysicalPage(i, page.physical);
-    // }
+    for (i = 0; i < virtPageNum; i++) {
+      Page page = (Page) memVector.elementAt(i);
+      if (page.physical == -1)
+        controlPanel.removePhysicalPage(i);
+      else
+        controlPanel.addPhysicalPage(i, page.physical);
+    }
   }
 
   // ... (setControlPanel, getPage, printLogFile, run IGUALES) ...
@@ -335,201 +283,72 @@ public class Kernel extends Thread {
     }
   }
 
-  //Metodo que imprime segmentos de una pagina con su estado (ocupado o libre)
-  public String obtenerEstadosSegmentosPagina(int pageNum) {
-    Page page = (Page) memVector.elementAt(pageNum);
-    StringBuilder sb = new StringBuilder();
-
-    long segmentSize = block / 4; // 1024 bytes
-    for (int s = 0; s < 4; s++) {
-      long inicio = page.low + (s * segmentSize);
-      long fin = inicio + segmentSize - 1;
-      boolean isUsed = (page.segR[s] == 1 || page.segM[s] == 1);
-
-      sb.append(
-          "Segmento " + s + ": " +
-              String.format("%04X", inicio) + " - " +
-              String.format("%04X", fin) + " " +
-              (isUsed ? "Ocupado" : "Libre") +
-              "\n");
-    }
-    return sb.toString();
-  }
-
-  private String generarTextoAging() {
-    StringBuilder sb = new StringBuilder();
-
-    for (int k = 0; k <= virtPageNum; k++) {
-        Page p = (Page) memVector.elementAt(k);
-
-        if (p.physical != -1) {
-            sb.append("Page ")
-              .append(p.id)
-              .append(" | Age: ")
-              .append(String.format("%8s",
-                  Integer.toBinaryString(p.age & 0xFF))
-                  .replace(' ', '0'))
-              .append("\n");
-        }
-    }
-
-    return sb.toString();
-}
-
   // --- STEP MODIFICADO PARA RANGOS ---
   public void step() {
     Instruction instruct = (Instruction) instructVector.elementAt(runs);
     String fullCmd = instruct.inst;
     String realCmd = fullCmd;
-    controlPanel.pageFaultValueLabel.setText("NO");
-
     long startAddr = instruct.addr;
     long endAddr = startAddr;
 
-    // Si es un rango (ej. READ-2fff)
     if (fullCmd.contains("-")) {
       String[] parts = fullCmd.split("-");
       realCmd = parts[0];
       endAddr = Long.parseLong(parts[1]);
     }
 
-    // Actualización de la GUI
     controlPanel.instructionValueLabel.setText(realCmd);
     if (startAddr != endAddr)
-      controlPanel.addressValueLabel.setText(
-          Long.toString(startAddr, addressradix) + "-" +
-              Long.toString(endAddr, addressradix));
+      controlPanel.addressValueLabel
+          .setText(Long.toString(startAddr, addressradix) + "-" + Long.toString(endAddr, addressradix));
     else
-      controlPanel.addressValueLabel.setText(
-          Long.toString(startAddr, addressradix));
+      controlPanel.addressValueLabel.setText(Long.toString(startAddr, addressradix));
 
-    output = "";
-    boolean[][] usedSegments = new boolean[virtPageNum + 1][4]; // estructura tempora para la fragmentacion interna
     long current = startAddr;
-    long segmentSize = block / 4; // 1024 bytes
-    TreeMap<Integer, TreeSet<Integer>> touched = new TreeMap<Integer, TreeSet<Integer>>();
+    long segmentSize = block / 4; // 1024
 
-    // Recorremos el rango de direcciones
+    TreeMap<Integer, TreeSet<Integer>> touched = new TreeMap<>();
+
+    // limitar a 4KB de proceso
+    long maxAddr = startAddr + block - 1;
+    if (endAddr > maxAddr)
+      endAddr = maxAddr;
+
     while (current <= endAddr) {
-      // Calculamos la pagina
-      int p = (int) (current / block);
 
-      // Calculamos la posición dentro de la página
-      long offset = current % block;
+      // int page = (int) (current / block); // ← página real
+      // long offset = current % block; // ← offset dentro de la página
+      // int segment = (int) (offset / segmentSize);
+      long relative = current - startAddr;
+      int page = (int) (relative / block);
+      long offset = relative % block;
+      int segment = (int) (offset / segmentSize);
 
-      // Calculamos el segmento (0-3)
-      int s = (int) (offset / segmentSize);
+      if (!touched.containsKey(page))
+        touched.put(page, new TreeSet<>());
 
-      // Validamos segmento
-      // (Aging)
-      if (s >= 0 && s < 4 && p >= 0 && p <= virtPageNum) {
+      touched.get(page).add(segment);
 
-        // vemos que pag y segmento es usado
-        usedSegments[p][s] = true;
-
-        Page page = (Page) memVector.elementAt(p); // 1. Obtenemos la página primero
-
-        // 2. VERIFICAR SI ESTÁ EN MEMORIA (PAGE FAULT)
-        if (page.physical == -1) {
-          controlPanel.pageFaultValueLabel.setText("YES");
-          // Llamada al archivo externo PageFault.java
-          PageFault.replacePage(memVector, virtPageNum, p, controlPanel);
-        }
-
-        if (!touched.containsKey(p))
-          touched.put(p, new TreeSet<Integer>());
-
-        touched.get(p).add(s); // READ
-        if (realCmd.startsWith("READ")) {
-          page.R = 1; // MARCAMOS EL USO
-          page.segR[s] = 1; // MARCAMOS EL SEGMENTO EN ESPECIFICO QUE SE USO
-        } else { // WRITe
-          page.M = 1;
-          page.R = 1; // <--- Escribir también es referenciar.
-          page.segM[s] = 1;
-        }
-        controlPanel.paintPage(page);
-        controlPanel.actualizarSegmentos(
-            obtenerEstadosSegmentosPagina(p)); // Imprimimos el área de segmentos con el estado actual
-
+      Page pg = (Page) memVector.elementAt(page);
+      if (realCmd.startsWith("READ")) {
+        pg.R = 1;
+        pg.segR[segment] = 1;
       } else {
-        // --- AGREGAR ESTO PARA CUMPLIR EL REQUERIMIENTO ---
-        System.out.println("Error: La dirección " + Long.toHexString(current) +
-            " apunta a una Página (" + p + ") o Segmento (" + s + ") inválido.");
-        System.exit(-1); // Salir del programa con código de error
+        pg.M = 1;
+        pg.segM[segment] = 1;
       }
 
-      // Avanzamos 1 segmento (1 KB)
-      current += segmentSize;
+      // saltar al siguiente segmento
+      // long next = ((current / segmentSize) + 1) * segmentSize;
+      // if (next <= current)
+      // next += segmentSize;
+      // current = next;
+
+      // AVANCE CORRECTO POR SEGMENTO RELATIVO
+      long nextRelative = ((relative / segmentSize) + 1) * segmentSize;
+      current = startAddr + nextRelative;
     }
 
-    // Calculamos la fragmentacion interna
-
-    int internalFragBytes = 0;
-
-    // BUCLE 1: CALCULAR EL TOTAL (Sumatoria)
-    for (int p = 0; p <= virtPageNum; p++) {
-      boolean pageUsed = false;
-      int segmentosLibre = 0;
-
-      // 1. Verificamos si la página se usó en esta instrucción
-      for (int s = 0; s < 4; s++) {
-        if (usedSegments[p][s]) {
-          pageUsed = true;
-        } else {
-          segmentosLibre++;
-        }
-      }
-      // 2. Si se usó
-      if (pageUsed) {
-        internalFragBytes += segmentosLibre * segmentSize;
-      }
-    }
-
-    // Generamos el mensaje que se mostrará
-
-    // 1. Agregamos el total
-    if (output == null)
-      output = ""; // Aseguramos que no sea null
-    output += "Fragmentación interna: " + internalFragBytes + " bytes\n";
-
-    // 2. Agregamos el detalle por página (BUCLE ÚNICO)
-    for (int p = 0; p <= virtPageNum; p++) {
-      boolean pageUsed = false;
-
-      // Verificamos uso
-      for (int s = 0; s < 4; s++) {
-        if (usedSegments[p][s]) {
-          pageUsed = true;
-          break;
-        }
-      }
-
-      // Solo imprimimos detalle si la página fue usada
-      if (pageUsed) {
-        output += "Página " + p + " segmentos libres: ";
-        for (int s = 0; s < 4; s++) {
-          if (!usedSegments[p][s]) {
-            output += s + " ";
-          }
-        }
-        output += "\n";
-      }
-      
-    }
-
-    // Impresion en consola
-
-    // Si la variable output tiene contenido, lo imprimimos
-    if (output != null && !output.isEmpty()) {
-      System.out.println("------ REPORTE FRAGMENTACIÓN (Paso " + runs + ") ------");
-      System.out.println(output);
-      System.out.println("----------------------------------------------------");
-    }
-
-    // ---------------------------------------------------------------//
-
-    // Construcción del resultado
     String resultStr = "Resultado ";
     for (Map.Entry<Integer, TreeSet<Integer>> entry : touched.entrySet()) {
       int p = entry.getKey();
@@ -543,11 +362,8 @@ public class Kernel extends Thread {
       resultStr += ") ";
     }
 
-    System.out.println(resultStr);
-
     controlPanel.paginasValueLabel.setText(resultStr);
 
-    // Logging
     String logMsg = realCmd + " ";
     if (addressradix == 16)
       logMsg += "hex ";
@@ -561,40 +377,20 @@ public class Kernel extends Thread {
     if (doStdoutLog)
       System.out.println(logMsg);
 
-    // Actualización de tiempos
-    // 4. ACTUALIZACIÓN DE AGING (Bit Shifting)
-    for (int k = 0; k <= virtPageNum; k++) {
+    if (controlPanel.pageFaultValueLabel.getText() != "YES")
+      controlPanel.pageFaultValueLabel.setText("NO");
+
+    for (int k = 0; k < virtPageNum; k++) {
       Page p = (Page) memVector.elementAt(k);
+      if (p.R == 1 && p.lastTouchTime == 10)
+        p.R = 0;
       if (p.physical != -1) {
-
-        // A) Desplazar a la derecha
-        p.age = (p.age >>> 1) & 0xFF;
-
-        // B) Si se usó (R=1), encender el bit de la izquierda
-        if (p.R == 1) {
-          p.age = p.age | 0x80;
-          p.R = 0; // Resetear R
-        }
-
-        // C) Imprimir en consola para ver los bits (DEBUG)
-        System.out.println(
-            "Page " + p.id + " | Age: " +
-                String.format("%8s",
-                    Integer.toBinaryString(p.age & 0xFF)).replace(' ', '0'));
-
-        // D) Tiempos GUI
         p.inMemTime += 10;
         p.lastTouchTime += 10;
       }
-      controlPanel.actualizarAging(
-    generarTextoAging()
-);
-
     }
-
     runs++;
     controlPanel.timeValueLabel.setText(Integer.toString(runs * 10) + " (ns)");
-
   }
 
   public void reset() {
@@ -615,6 +411,5 @@ public class Kernel extends Thread {
 
     controlPanel.highValueLabel.setText("0");
     init(command_file, config_file);
-
   }
 }

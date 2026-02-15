@@ -12,7 +12,9 @@ public class Page
   public byte[] segR = new byte[4]; // Bit R para cada uno de los 4 segmentos
   public byte[] segM = new byte[4]; // Bit M para cada uno de los 4 segmentos
   // ------------------------------------
-
+  // --- VARIABLE PARA ENVEJECIMIENTO ---
+  public int age; // Registro de historial de 32 bits
+  // -------------------------------------
   public Page( int id, int physical, byte R, byte M, int inMemTime, int lastTouchTime, long high, long low ) 
   {
     this.id = id;
