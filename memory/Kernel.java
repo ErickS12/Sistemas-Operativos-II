@@ -250,32 +250,8 @@ public class Kernel extends Thread {
       trace.delete();
     }
     runs = 0;
-    // ... (map_count logic) ...
-    // for (i = 0; i < virtPageNum; i++) {
-    // Page page = (Page) memVector.elementAt(i);
-    // if (page.physical != -1)
-    // map_count++;
-    // if (page.physical == -1) {
-    // page.physical = i;
-    // map_count++;
-    // }
-    // }
-    /*
-     * int physicalFrames = 16; // SOLO 3 MARCOS
-     * int frame = 0;
-     * 
-     * for (int k = 0; k <= virtPageNum; k++) {
-     * Page page = (Page) memVector.elementAt(k);
-     * if (frame < physicalFrames) {
-     * page.physical = frame;
-     * frame++;
-     * } else {
-     * page.physical = -1;
-     * }
-     * }
-     */
 
-    // ------------------------- SE CAMBIÓ ESTO -------------------------//
+    // ------------------------- se cambio esto -------------------------//
     int frame = 0;
     for (i = 0; i <= virtPageNum; i++) {
       Page page = (Page) memVector.elementAt(i);
@@ -301,14 +277,6 @@ public class Kernel extends Thread {
       }
     }
 
-    // ... (GUI update loop) ...
-    // for (i = 0; i < virtPageNum; i++) {
-    // Page page = (Page) memVector.elementAt(i);
-    // if (page.physical == -1)
-    // controlPanel.removePhysicalPage(i);
-    // else
-    // controlPanel.addPhysicalPage(i, page.physical);
-    // }
   }
 
   // ... (setControlPanel, getPage, printLogFile, run IGUALES) ...
