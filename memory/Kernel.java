@@ -346,7 +346,7 @@ public class Kernel extends Thread {
 
   // --- STEP MODIFICADO PARA RANGOS ---
   public void step() {
-    Instruction instruct = (Instruction) instructVector.elementAt(runs);
+        Instruction instruct = (Instruction) instructVector.elementAt(runs);
     String fullCmd = instruct.inst;
     String realCmd = fullCmd;
     controlPanel.pageFaultValueLabel.setText("NO");
@@ -354,81 +354,80 @@ public class Kernel extends Thread {
     long startAddr = instruct.addr;
     long endAddr = startAddr;
 
-    // Si es un rango (ej. READ-2fff)
     if (fullCmd.contains("-")) {
-      String[] parts = fullCmd.split("-");
-      realCmd = parts[0];
-      endAddr = Long.parseLong(parts[1]);
+        String[] parts = fullCmd.split("-");
+        realCmd = parts[0];
+        endAddr = Long.parseLong(parts[1]);
     }
 
-    // Actualización de la GUI
     controlPanel.instructionValueLabel.setText(realCmd);
+
     if (startAddr != endAddr)
-      controlPanel.addressValueLabel.setText(
-          Long.toString(startAddr, addressradix) + "-" +
-              Long.toString(endAddr, addressradix));
+        controlPanel.addressValueLabel.setText(
+                Long.toString(startAddr, addressradix) + "-" +
+                Long.toString(endAddr, addressradix));
     else
-      controlPanel.addressValueLabel.setText(
-          Long.toString(startAddr, addressradix));
+        controlPanel.addressValueLabel.setText(
+                Long.toString(startAddr, addressradix));
 
     output = "";
-    boolean[][] usedSegments = new boolean[virtPageNum + 1][4]; // estructura tempora para la fragmentacion interna
-    long current = startAddr;
-    long segmentSize = block / 4; // 1024 bytes
-    TreeMap<Integer, TreeSet<Integer>> touched = new TreeMap<Integer, TreeSet<Integer>>();
+    boolean[][] usedSegments = new boolean[virtPageNum + 1][4];
+    long segmentSize = block / 4;
+    TreeMap<Integer, TreeSet<Integer>> touched = new TreeMap<>();
 
-    // Recorremos el rango de direcciones
-    while (current <= endAddr) {
-      // Calculamos la pagina
-      int p = (int) (current / block);
 
-      // Calculamos la posición dentro de la página
-      long offset = current % block;
+    // ---------------------- SE CAMBIÓ ESTA PARTE ----------------------
+    //  while (current <= endAddr)
+    int startPage = (int)(startAddr / block);
+    int endPage   = (int)(endAddr   / block);
 
-      // Calculamos el segmento (0-3)
-      int s = (int) (offset / segmentSize);
+    for (int p = startPage; p <= endPage; p++) {
 
-      // Validamos segmento
-      // (Aging)
-      if (s >= 0 && s < 4 && p >= 0 && p <= virtPageNum) {
-
-        // vemos que pag y segmento es usado
-        usedSegments[p][s] = true;
-
-        Page page = (Page) memVector.elementAt(p); // 1. Obtenemos la página primero
-
-        // 2. VERIFICAR SI ESTÁ EN MEMORIA (PAGE FAULT)
-        if (page.physical == -1) {
-          controlPanel.pageFaultValueLabel.setText("YES");
-          // Llamada al archivo externo PageFault.java
-          PageFault.replacePage(memVector, virtPageNum, p, controlPanel);
+        if (p < 0 || p > virtPageNum) {
+            System.out.println("Error: Página fuera de rango: " + p);
+            System.exit(-1);
         }
+
+        Page page = (Page) memVector.elementAt(p);
+
+        // PAGE FAULT
+        if (page.physical == -1) {
+            controlPanel.pageFaultValueLabel.setText("YES");
+            PageFault.replacePage(memVector, virtPageNum, p, controlPanel);
+        }
+
+        long pageStartAddr = p * block;
+        long pageEndAddr   = pageStartAddr + block - 1;
+
+        long effectiveStart = Math.max(startAddr, pageStartAddr);
+        long effectiveEnd   = Math.min(endAddr, pageEndAddr);
+
+        int startSegment = (int)((effectiveStart - pageStartAddr) / segmentSize);
+        int endSegment   = (int)((effectiveEnd   - pageStartAddr) / segmentSize);
 
         if (!touched.containsKey(p))
-          touched.put(p, new TreeSet<Integer>());
+            touched.put(p, new TreeSet<Integer>());
 
-        touched.get(p).add(s); // READ
-        if (realCmd.startsWith("READ")) {
-          page.R = 1; // MARCAMOS EL USO
-          page.segR[s] = 1; // MARCAMOS EL SEGMENTO EN ESPECIFICO QUE SE USO
-        } else { // WRITe
-          page.M = 1;
-          page.R = 1; // <--- Escribir también es referenciar.
-          page.segM[s] = 1;
+        for (int s = startSegment; s <= endSegment; s++) {
+
+            if (s < 0 || s > 3) continue;
+
+            usedSegments[p][s] = true;
+            touched.get(p).add(s);
+
+            if (realCmd.startsWith("READ")) {
+                page.R = 1;
+                page.segR[s] = 1;
+            } else {
+                page.R = 1;
+                page.M = 1;
+                page.segM[s] = 1;
+            }
         }
+
         controlPanel.paintPage(page);
         controlPanel.actualizarSegmentos(
-            obtenerEstadosSegmentosPagina(p)); // Imprimimos el área de segmentos con el estado actual
-
-      } else {
-        // --- AGREGAR ESTO PARA CUMPLIR EL REQUERIMIENTO ---
-        System.out.println("Error: La dirección " + Long.toHexString(current) +
-            " apunta a una Página (" + p + ") o Segmento (" + s + ") inválido.");
-        System.exit(-1); // Salir del programa con código de error
-      }
-
-      // Avanzamos 1 segmento (1 KB)
-      current += segmentSize;
+                obtenerEstadosSegmentosPagina(p));
     }
 
     // Calculamos la fragmentacion interna
