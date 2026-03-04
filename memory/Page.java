@@ -9,8 +9,8 @@ public class Page
   public long high;
   public long low;
   // --- NUEVOS CAMPOS PARA SEGMENTOS ---
-  public byte[] segR = new byte[4]; // Bit R para cada uno de los 4 segmentos
-  public byte[] segM = new byte[4]; // Bit M para cada uno de los 4 segmentos
+  public byte[] segR = new byte[2]; // Bit R para cada uno de los 2 segmentos
+  public byte[] segM = new byte[2]; // Bit M para cada uno de los 2 segmentos
   // ------------------------------------
   // --- VARIABLE PARA ENVEJECIMIENTO ---
   public int age; // Registro de historial de 32 bits
@@ -26,7 +26,7 @@ public class Page
     this.high = high;
     this.low = low;
     // Inicializar bits de segmentos en 0
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 2; i++) {
         this.segR[i] = 0;
         this.segM[i] = 0;
     }

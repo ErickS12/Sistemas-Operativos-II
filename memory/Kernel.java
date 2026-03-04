@@ -135,7 +135,7 @@ public class Kernel extends Thread {
               } else {
                 block = Long.parseLong(tmp, 10);
               }
-              address_limit = (block * virtPageNum + 1) - 1;
+              address_limit = (block * (virtPageNum + 1)) - 1;
             }
             // ... (validación pagesize igual) ...
             for (i = 0; i <= virtPageNum; i++) {
@@ -308,8 +308,8 @@ public class Kernel extends Thread {
     Page page = (Page) memVector.elementAt(pageNum);
     StringBuilder sb = new StringBuilder();
 
-    long segmentSize = block / 4; // 1024 bytes
-    for (int s = 0; s < 4; s++) {
+    long segmentSize = block / 2; // 2048 bytes
+    for (int s = 0; s < 2; s++) {
       long inicio = page.low + (s * segmentSize);
       long fin = inicio + segmentSize - 1;
       boolean isUsed = (page.segR[s] == 1 || page.segM[s] == 1);
@@ -371,8 +371,8 @@ public class Kernel extends Thread {
                 Long.toString(startAddr, addressradix));
 
     output = "";
-    boolean[][] usedSegments = new boolean[virtPageNum + 1][4];
-    long segmentSize = block / 4;
+    boolean[][] usedSegments = new boolean[virtPageNum + 1][2];
+    long segmentSize = block / 2; // 2048 bytes
     TreeMap<Integer, TreeSet<Integer>> touched = new TreeMap<>();
 
 
@@ -410,7 +410,7 @@ public class Kernel extends Thread {
 
         for (int s = startSegment; s <= endSegment; s++) {
 
-            if (s < 0 || s > 3) continue;
+            if (s < 0 || s > 1) continue;
 
             usedSegments[p][s] = true;
             touched.get(p).add(s);
@@ -440,7 +440,7 @@ public class Kernel extends Thread {
       int segmentosLibre = 0;
 
       // 1. Verificamos si la página se usó en esta instrucción
-      for (int s = 0; s < 4; s++) {
+      for (int s = 0; s < 2; s++) {
         if (usedSegments[p][s]) {
           pageUsed = true;
         } else {
@@ -465,7 +465,7 @@ public class Kernel extends Thread {
       boolean pageUsed = false;
 
       // Verificamos uso
-      for (int s = 0; s < 4; s++) {
+      for (int s = 0; s < 2; s++) {
         if (usedSegments[p][s]) {
           pageUsed = true;
           break;
@@ -475,7 +475,7 @@ public class Kernel extends Thread {
       // Solo imprimimos detalle si la página fue usada
       if (pageUsed) {
         output += "Página " + p + " segmentos libres: ";
-        for (int s = 0; s < 4; s++) {
+        for (int s = 0; s < 2; s++) {
           if (!usedSegments[p][s]) {
             output += s + " ";
           }

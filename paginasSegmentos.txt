@@ -1,387 +1,257 @@
 TABLA DE PAGINACIÓN Y SEGMENTACIÓN
-Configuración: Página = 4KB (0x1000), Segmento = 1KB (0x0400)
--------------------------------------------------------------
-
+Configuración: Página = 4KB (0x1000), Segmento = 2KB (0x0800)
 PÁGINA 0  [Rango Total: 0000 - 0FFF]
-   Segmento 0: 0000 - 03FF
-   Segmento 1: 0400 - 07FF
-   Segmento 2: 0800 - 0BFF
-   Segmento 3: 0C00 - 0FFF
+Segmento 0: 0000 - 07FF
+Segmento 1: 0800 - 0FFF
 
 PÁGINA 1  [Rango Total: 1000 - 1FFF]
-   Segmento 0: 1000 - 13FF
-   Segmento 1: 1400 - 17FF
-   Segmento 2: 1800 - 1BFF
-   Segmento 3: 1C00 - 1FFF
+Segmento 0: 1000 - 17FF
+Segmento 1: 1800 - 1FFF
 
 PÁGINA 2  [Rango Total: 2000 - 2FFF]
-   Segmento 0: 2000 - 23FF
-   Segmento 1: 2400 - 27FF
-   Segmento 2: 2800 - 2BFF
-   Segmento 3: 2C00 - 2FFF
+Segmento 0: 2000 - 27FF
+Segmento 1: 2800 - 2FFF
 
 PÁGINA 3  [Rango Total: 3000 - 3FFF]
-   Segmento 0: 3000 - 33FF
-   Segmento 1: 3400 - 37FF
-   Segmento 2: 3800 - 3BFF
-   Segmento 3: 3C00 - 3FFF
+Segmento 0: 3000 - 37FF
+Segmento 1: 3800 - 3FFF
 
 PÁGINA 4  [Rango Total: 4000 - 4FFF]
-   Segmento 0: 4000 - 43FF
-   Segmento 1: 4400 - 47FF
-   Segmento 2: 4800 - 4BFF
-   Segmento 3: 4C00 - 4FFF
+Segmento 0: 4000 - 47FF
+Segmento 1: 4800 - 4FFF
 
 PÁGINA 5  [Rango Total: 5000 - 5FFF]
-   Segmento 0: 5000 - 53FF
-   Segmento 1: 5400 - 57FF
-   Segmento 2: 5800 - 5BFF
-   Segmento 3: 5C00 - 5FFF
+Segmento 0: 5000 - 57FF
+Segmento 1: 5800 - 5FFF
 
 PÁGINA 6  [Rango Total: 6000 - 6FFF]
-   Segmento 0: 6000 - 63FF
-   Segmento 1: 6400 - 67FF
-   Segmento 2: 6800 - 6BFF
-   Segmento 3: 6C00 - 6FFF
+Segmento 0: 6000 - 67FF
+Segmento 1: 6800 - 6FFF
 
 PÁGINA 7  [Rango Total: 7000 - 7FFF]
-   Segmento 0: 7000 - 73FF
-   Segmento 1: 7400 - 77FF
-   Segmento 2: 7800 - 7BFF
-   Segmento 3: 7C00 - 7FFF
+Segmento 0: 7000 - 77FF
+Segmento 1: 7800 - 7FFF
 
 PÁGINA 8  [Rango Total: 8000 - 8FFF]
-   Segmento 0: 8000 - 83FF
-   Segmento 1: 8400 - 87FF
-   Segmento 2: 8800 - 8BFF
-   Segmento 3: 8C00 - 8FFF
+Segmento 0: 8000 - 87FF
+Segmento 1: 8800 - 8FFF
 
-PÁGINA 9 [Rango Total: 9000 - 9FFF]
-   Segmento 0: 9000 - 93FF
-   Segmento 1: 9400 - 97FF
-   Segmento 2: 9800 - 9BFF
-   Segmento 3: 9C00 - 9FFF
+PÁGINA 9  [Rango Total: 9000 - 9FFF]
+Segmento 0: 9000 - 97FF
+Segmento 1: 9800 - 9FFF
 
 PÁGINA 10 [Rango Total: A000 - AFFF]
-   Segmento 0: A000 - A3FF
-   Segmento 1: A400 - A7FF
-   Segmento 2: A800 - ABFF
-   Segmento 3: AC00 - AFFF
+Segmento 0: A000 - A7FF
+Segmento 1: A800 - AFFF
 
 PÁGINA 11 [Rango Total: B000 - BFFF]
-   Segmento 0: B000 - B3FF
-   Segmento 1: B400 - B7FF
-   Segmento 2: B800 - BBFF
-   Segmento 3: BC00 - BFFF
+Segmento 0: B000 - B7FF
+Segmento 1: B800 - BFFF
 
 PÁGINA 12 [Rango Total: C000 - CFFF]
-   Segmento 0: C000 - C3FF
-   Segmento 1: C400 - C7FF
-   Segmento 2: C800 - CBFF
-   Segmento 3: CC00 - CFFF
+Segmento 0: C000 - C7FF
+Segmento 1: C800 - CFFF
 
 PÁGINA 13 [Rango Total: D000 - DFFF]
-   Segmento 0: D000 - D3FF
-   Segmento 1: D400 - D7FF
-   Segmento 2: D800 - DBFF
-   Segmento 3: DC00 - DFFF
+Segmento 0: D000 - D7FF
+Segmento 1: D800 - DFFF
 
 PÁGINA 14 [Rango Total: E000 - EFFF]
-   Segmento 0: E000 - E3FF
-   Segmento 1: E400 - E7FF
-   Segmento 2: E800 - EBFF
-   Segmento 3: EC00 - EFFF
+Segmento 0: E000 - E7FF
+Segmento 1: E800 - EFFF
 
 PÁGINA 15 [Rango Total: F000 - FFFF]
-   Segmento 0: F000 - F3FF
-   Segmento 1: F400 - F7FF
-   Segmento 2: F800 - FBFF
-   Segmento 3: FC00 - FFFF
+Segmento 0: F000 - F7FF
+Segmento 1: F800 - FFFF
 
 PÁGINA 16 [Rango Total: 10000 - 10FFF]
-   Segmento 0: 10000 - 103FF
-   Segmento 1: 10400 - 107FF
-   Segmento 2: 10800 - 10BFF
-   Segmento 3: 10C00 - 10FFF
+Segmento 0: 10000 - 107FF
+Segmento 1: 10800 - 10FFF
 
 PÁGINA 17 [Rango Total: 11000 - 11FFF]
-   Segmento 0: 11000 - 113FF
-   Segmento 1: 11400 - 117FF
-   Segmento 2: 11800 - 11BFF
-   Segmento 3: 11C00 - 11FFF
+Segmento 0: 11000 - 117FF
+Segmento 1: 11800 - 11FFF
 
 PÁGINA 18 [Rango Total: 12000 - 12FFF]
-   Segmento 0: 12000 - 123FF
-   Segmento 1: 12400 - 127FF
-   Segmento 2: 12800 - 12BFF
-   Segmento 3: 12C00 - 12FFF
+Segmento 0: 12000 - 127FF
+Segmento 1: 12800 - 12FFF
 
 PÁGINA 19 [Rango Total: 13000 - 13FFF]
-   Segmento 0: 13000 - 133FF
-   Segmento 1: 13400 - 137FF
-   Segmento 2: 13800 - 13BFF
-   Segmento 3: 13C00 - 13FFF
+Segmento 0: 13000 - 137FF
+Segmento 1: 13800 - 13FFF
 
 PÁGINA 20 [Rango Total: 14000 - 14FFF]
-   Segmento 0: 14000 - 143FF
-   Segmento 1: 14400 - 147FF
-   Segmento 2: 14800 - 14BFF
-   Segmento 3: 14C00 - 14FFF
+Segmento 0: 14000 - 147FF
+Segmento 1: 14800 - 14FFF
 
 PÁGINA 21 [Rango Total: 15000 - 15FFF]
-   Segmento 0: 15000 - 153FF
-   Segmento 1: 15400 - 157FF
-   Segmento 2: 15800 - 15BFF
-   Segmento 3: 15C00 - 15FFF
+Segmento 0: 15000 - 157FF
+Segmento 1: 15800 - 15FFF
 
 PÁGINA 22 [Rango Total: 16000 - 16FFF]
-   Segmento 0: 16000 - 163FF
-   Segmento 1: 16400 - 167FF
-   Segmento 2: 16800 - 16BFF
-   Segmento 3: 16C00 - 16FFF
+Segmento 0: 16000 - 167FF
+Segmento 1: 16800 - 16FFF
 
 PÁGINA 23 [Rango Total: 17000 - 17FFF]
-   Segmento 0: 17000 - 173FF
-   Segmento 1: 17400 - 177FF
-   Segmento 2: 17800 - 17BFF
-   Segmento 3: 17C00 - 17FFF
+Segmento 0: 17000 - 177FF
+Segmento 1: 17800 - 17FFF
 
 PÁGINA 24 [Rango Total: 18000 - 18FFF]
-   Segmento 0: 18000 - 183FF
-   Segmento 1: 18400 - 187FF
-   Segmento 2: 18800 - 18BFF
-   Segmento 3: 18C00 - 18FFF
+Segmento 0: 18000 - 187FF
+Segmento 1: 18800 - 18FFF
 
 PÁGINA 25 [Rango Total: 19000 - 19FFF]
-   Segmento 0: 19000 - 193FF
-   Segmento 1: 19400 - 197FF
-   Segmento 2: 19800 - 19BFF
-   Segmento 3: 19C00 - 19FFF
+Segmento 0: 19000 - 197FF
+Segmento 1: 19800 - 19FFF
 
 PÁGINA 26 [Rango Total: 1A000 - 1AFFF]
-   Segmento 0: 1A000 - 1A3FF
-   Segmento 1: 1A400 - 1A7FF
-   Segmento 2: 1A800 - 1ABFF
-   Segmento 3: 1AC00 - 1AFFF
+Segmento 0: 1A000 - 1A7FF
+Segmento 1: 1A800 - 1AFFF
 
 PÁGINA 27 [Rango Total: 1B000 - 1BFFF]
-   Segmento 0: 1B000 - 1B3FF
-   Segmento 1: 1B400 - 1B7FF
-   Segmento 2: 1B800 - 1BBFF
-   Segmento 3: 1BC00 - 1BFFF
+Segmento 0: 1B000 - 1B7FF
+Segmento 1: 1B800 - 1BFFF
 
 PÁGINA 28 [Rango Total: 1C000 - 1CFFF]
-   Segmento 0: 1C000 - 1C3FF
-   Segmento 1: 1C400 - 1C7FF
-   Segmento 2: 1C800 - 1CBFF
-   Segmento 3: 1CC00 - 1CFFF
+Segmento 0: 1C000 - 1C7FF
+Segmento 1: 1C800 - 1CFFF
 
 PÁGINA 29 [Rango Total: 1D000 - 1DFFF]
-   Segmento 0: 1D000 - 1D3FF
-   Segmento 1: 1D400 - 1D7FF
-   Segmento 2: 1D800 - 1DBFF
-   Segmento 3: 1DC00 - 1DFFF
+Segmento 0: 1D000 - 1D7FF
+Segmento 1: 1D800 - 1DFFF
 
 PÁGINA 30 [Rango Total: 1E000 - 1EFFF]
-   Segmento 0: 1E000 - 1E3FF
-   Segmento 1: 1E400 - 1E7FF
-   Segmento 2: 1E800 - 1EBFF
-   Segmento 3: 1EC00 - 1EFFF
+Segmento 0: 1E000 - 1E7FF
+Segmento 1: 1E800 - 1EFFF
 
 PÁGINA 31 [Rango Total: 1F000 - 1FFFF]
-   Segmento 0: 1F000 - 1F3FF
-   Segmento 1: 1F400 - 1F7FF
-   Segmento 2: 1F800 - 1FBFF
-   Segmento 3: 1FC00 - 1FFFF
+Segmento 0: 1F000 - 1F7FF
+Segmento 1: 1F800 - 1FFFF
 
 PÁGINA 32  [Rango Total: 20000 - 20FFF]
-   Segmento 0: 20000 - 203FF
-   Segmento 1: 20400 - 207FF
-   Segmento 2: 20800 - 20BFF
-   Segmento 3: 20C00 - 20FFF
+Segmento 0: 20000 - 207FF
+Segmento 1: 20800 - 20FFF
 
 PÁGINA 33  [Rango Total: 21000 - 21FFF]
-   Segmento 0: 21000 - 213FF
-   Segmento 1: 21400 - 217FF
-   Segmento 2: 21800 - 21BFF
-   Segmento 3: 21C00 - 21FFF
+Segmento 0: 21000 - 217FF
+Segmento 1: 21800 - 21FFF
 
 PÁGINA 34  [Rango Total: 22000 - 22FFF]
-   Segmento 0: 22000 - 223FF
-   Segmento 1: 22400 - 227FF
-   Segmento 2: 22800 - 22BFF
-   Segmento 3: 22C00 - 22FFF
+Segmento 0: 22000 - 227FF
+Segmento 1: 22800 - 22FFF
 
 PÁGINA 35  [Rango Total: 23000 - 23FFF]
-   Segmento 0: 23000 - 233FF
-   Segmento 1: 23400 - 237FF
-   Segmento 2: 23800 - 23BFF
-   Segmento 3: 23C00 - 23FFF
+Segmento 0: 23000 - 237FF
+Segmento 1: 23800 - 23FFF
 
 PÁGINA 36  [Rango Total: 24000 - 24FFF]
-   Segmento 0: 24000 - 243FF
-   Segmento 1: 24400 - 247FF
-   Segmento 2: 24800 - 24BFF
-   Segmento 3: 24C00 - 24FFF
+Segmento 0: 24000 - 247FF
+Segmento 1: 24800 - 24FFF
 
 PÁGINA 37  [Rango Total: 25000 - 25FFF]
-   Segmento 0: 25000 - 253FF
-   Segmento 1: 25400 - 257FF
-   Segmento 2: 25800 - 25BFF
-   Segmento 3: 25C00 - 25FFF
+Segmento 0: 25000 - 257FF
+Segmento 1: 25800 - 25FFF
 
 PÁGINA 38  [Rango Total: 26000 - 26FFF]
-   Segmento 0: 26000 - 263FF
-   Segmento 1: 26400 - 267FF
-   Segmento 2: 26800 - 26BFF
-   Segmento 3: 26C00 - 26FFF
+Segmento 0: 26000 - 267FF
+Segmento 1: 26800 - 26FFF
 
 PÁGINA 39  [Rango Total: 27000 - 27FFF]
-   Segmento 0: 27000 - 273FF
-   Segmento 1: 27400 - 277FF
-   Segmento 2: 27800 - 27BFF
-   Segmento 3: 27C00 - 27FFF
+Segmento 0: 27000 - 277FF
+Segmento 1: 27800 - 27FFF
 
 PÁGINA 40  [Rango Total: 28000 - 28FFF]
-   Segmento 0: 28000 - 283FF
-   Segmento 1: 28400 - 287FF
-   Segmento 2: 28800 - 28BFF
-   Segmento 3: 28C00 - 28FFF
+Segmento 0: 28000 - 287FF
+Segmento 1: 28800 - 28FFF
 
 PÁGINA 41  [Rango Total: 29000 - 29FFF]
-   Segmento 0: 29000 - 293FF
-   Segmento 1: 29400 - 297FF
-   Segmento 2: 29800 - 29BFF
-   Segmento 3: 29C00 - 29FFF
+Segmento 0: 29000 - 297FF
+Segmento 1: 29800 - 29FFF
 
 PÁGINA 42  [Rango Total: 2A000 - 2AFFF]
-   Segmento 0: 2A000 - 2A3FF
-   Segmento 1: 2A400 - 2A7FF
-   Segmento 2: 2A800 - 2ABFF
-   Segmento 3: 2AC00 - 2AFFF
+Segmento 0: 2A000 - 2A7FF
+Segmento 1: 2A800 - 2AFFF
 
 PÁGINA 43  [Rango Total: 2B000 - 2BFFF]
-   Segmento 0: 2B000 - 2B3FF
-   Segmento 1: 2B400 - 2B7FF
-   Segmento 2: 2B800 - 2BBFF
-   Segmento 3: 2BC00 - 2BFFF
+Segmento 0: 2B000 - 2B7FF
+Segmento 1: 2B800 - 2BFFF
 
 PÁGINA 44  [Rango Total: 2C000 - 2CFFF]
-   Segmento 0: 2C000 - 2C3FF
-   Segmento 1: 2C400 - 2C7FF
-   Segmento 2: 2C800 - 2CBFF
-   Segmento 3: 2CC00 - 2CFFF
+Segmento 0: 2C000 - 2C7FF
+Segmento 1: 2C800 - 2CFFF
 
 PÁGINA 45  [Rango Total: 2D000 - 2DFFF]
-   Segmento 0: 2D000 - 2D3FF
-   Segmento 1: 2D400 - 2D7FF
-   Segmento 2: 2D800 - 2DBFF
-   Segmento 3: 2DC00 - 2DFFF
+Segmento 0: 2D000 - 2D7FF
+Segmento 1: 2D800 - 2DFFF
 
 PÁGINA 46  [Rango Total: 2E000 - 2EFFF]
-   Segmento 0: 2E000 - 2E3FF
-   Segmento 1: 2E400 - 2E7FF
-   Segmento 2: 2E800 - 2EBFF
-   Segmento 3: 2EC00 - 2EFFF
+Segmento 0: 2E000 - 2E7FF
+Segmento 1: 2E800 - 2EFFF
 
 PÁGINA 47  [Rango Total: 2F000 - 2FFFF]
-   Segmento 0: 2F000 - 2F3FF
-   Segmento 1: 2F400 - 2F7FF
-   Segmento 2: 2F800 - 2FBFF
-   Segmento 3: 2FC00 - 2FFFF
+Segmento 0: 2F000 - 2F7FF
+Segmento 1: 2F800 - 2FFFF
 
 PÁGINA 48  [Rango Total: 30000 - 30FFF]
-   Segmento 0: 30000 - 303FF
-   Segmento 1: 30400 - 307FF
-   Segmento 2: 30800 - 30BFF
-   Segmento 3: 30C00 - 30FFF
+Segmento 0: 30000 - 307FF
+Segmento 1: 30800 - 30FFF
 
 PÁGINA 49  [Rango Total: 31000 - 31FFF]
-   Segmento 0: 31000 - 313FF
-   Segmento 1: 31400 - 317FF
-   Segmento 2: 31800 - 31BFF
-   Segmento 3: 31C00 - 31FFF
+Segmento 0: 31000 - 317FF
+Segmento 1: 31800 - 31FFF
 
 PÁGINA 50  [Rango Total: 32000 - 32FFF]
-   Segmento 0: 32000 - 323FF
-   Segmento 1: 32400 - 327FF
-   Segmento 2: 32800 - 32BFF
-   Segmento 3: 32C00 - 32FFF
+Segmento 0: 32000 - 327FF
+Segmento 1: 32800 - 32FFF
 
 PÁGINA 51  [Rango Total: 33000 - 33FFF]
-   Segmento 0: 33000 - 333FF
-   Segmento 1: 33400 - 337FF
-   Segmento 2: 33800 - 33BFF
-   Segmento 3: 33C00 - 33FFF
+Segmento 0: 33000 - 337FF
+Segmento 1: 33800 - 33FFF
 
 PÁGINA 52  [Rango Total: 34000 - 34FFF]
-   Segmento 0: 34000 - 343FF
-   Segmento 1: 34400 - 347FF
-   Segmento 2: 34800 - 34BFF
-   Segmento 3: 34C00 - 34FFF
+Segmento 0: 34000 - 347FF
+Segmento 1: 34800 - 34FFF
 
 PÁGINA 53  [Rango Total: 35000 - 35FFF]
-   Segmento 0: 35000 - 353FF
-   Segmento 1: 35400 - 357FF
-   Segmento 2: 35800 - 35BFF
-   Segmento 3: 35C00 - 35FFF
+Segmento 0: 35000 - 357FF
+Segmento 1: 35800 - 35FFF
 
 PÁGINA 54  [Rango Total: 36000 - 36FFF]
-   Segmento 0: 36000 - 363FF
-   Segmento 1: 36400 - 367FF
-   Segmento 2: 36800 - 36BFF
-   Segmento 3: 36C00 - 36FFF
+Segmento 0: 36000 - 367FF
+Segmento 1: 36800 - 36FFF
 
 PÁGINA 55  [Rango Total: 37000 - 37FFF]
-   Segmento 0: 37000 - 373FF
-   Segmento 1: 37400 - 377FF
-   Segmento 2: 37800 - 37BFF
-   Segmento 3: 37C00 - 37FFF
+Segmento 0: 37000 - 377FF
+Segmento 1: 37800 - 37FFF
 
 PÁGINA 56  [Rango Total: 38000 - 38FFF]
-   Segmento 0: 38000 - 383FF
-   Segmento 1: 38400 - 387FF
-   Segmento 2: 38800 - 38BFF
-   Segmento 3: 38C00 - 38FFF
+Segmento 0: 38000 - 387FF
+Segmento 1: 38800 - 38FFF
 
 PÁGINA 57  [Rango Total: 39000 - 39FFF]
-   Segmento 0: 39000 - 393FF
-   Segmento 1: 39400 - 397FF
-   Segmento 2: 39800 - 39BFF
-   Segmento 3: 39C00 - 39FFF
+Segmento 0: 39000 - 397FF
+Segmento 1: 39800 - 39FFF
 
 PÁGINA 58  [Rango Total: 3A000 - 3AFFF]
-   Segmento 0: 3A000 - 3A3FF
-   Segmento 1: 3A400 - 3A7FF
-   Segmento 2: 3A800 - 3ABFF
-   Segmento 3: 3AC00 - 3AFFF
+Segmento 0: 3A000 - 3A7FF
+Segmento 1: 3A800 - 3AFFF
 
 PÁGINA 59  [Rango Total: 3B000 - 3BFFF]
-   Segmento 0: 3B000 - 3B3FF
-   Segmento 1: 3B400 - 3B7FF
-   Segmento 2: 3B800 - 3BBFF
-   Segmento 3: 3BC00 - 3BFFF
+Segmento 0: 3B000 - 3B7FF
+Segmento 1: 3B800 - 3BFFF
 
 PÁGINA 60  [Rango Total: 3C000 - 3CFFF]
-   Segmento 0: 3C000 - 3C3FF
-   Segmento 1: 3C400 - 3C7FF
-   Segmento 2: 3C800 - 3CBFF
-   Segmento 3: 3CC00 - 3CFFF
+Segmento 0: 3C000 - 3C7FF
+Segmento 1: 3C800 - 3CFFF
 
 PÁGINA 61  [Rango Total: 3D000 - 3DFFF]
-   Segmento 0: 3D000 - 3D3FF
-   Segmento 1: 3D400 - 3D7FF
-   Segmento 2: 3D800 - 3DBFF
-   Segmento 3: 3DC00 - 3DFFF
+Segmento 0: 3D000 - 3D7FF
+Segmento 1: 3D800 - 3DFFF
 
 PÁGINA 62  [Rango Total: 3E000 - 3EFFF]
-   Segmento 0: 3E000 - 3E3FF
-   Segmento 1: 3E400 - 3E7FF
-   Segmento 2: 3E800 - 3EBFF
-   Segmento 3: 3EC00 - 3EFFF
+Segmento 0: 3E000 - 3E7FF
+Segmento 1: 3E800 - 3EFFF
 
 PÁGINA 63  [Rango Total: 3F000 - 3FFFF]
-   Segmento 0: 3F000 - 3F3FF
-   Segmento 1: 3F400 - 3F7FF
-   Segmento 2: 3F800 - 3FBFF
-   Segmento 3: 3FC00 - 3FFFF
+Segmento 0: 3F000 - 3F7FF
+Segmento 1: 3F800 - 3FFFF

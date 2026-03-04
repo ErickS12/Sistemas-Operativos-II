@@ -7,6 +7,11 @@
 //READ hex 10000-10010 
 
 
+READ hex 2000 //P2 s0 
+READ hex 37FF //P3 s0
+READ hex 11000-13000 //(P17, S0,S1) (P18, S0,S1) (P19, S0)
+READ hex 20000 //P40 s0 fallo de pag
+
 //READ hex 3D000 //P61
 READ hex 0001      // P0 s0
 READ hex 0400       // P0 s1
