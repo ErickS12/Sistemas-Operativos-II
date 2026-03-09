@@ -1,0 +1,23 @@
+# --- JAVA ---
+*.class
+*.jar
+*.war
+*.ear
+/bin/
+.metadata/
+.classpath
+.project
+.settings/
+
+# --- PYTHON ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.venv
+env/
+
+# --- SISTEMA ---
+.DS_Store
+Thumbs.db

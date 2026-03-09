@@ -1,0 +1,20 @@
+//READ hex 10-50
+//READ hex 1000-1020
+//READ hex 2000-2010
+//READ hex 3000-3010
+//READ hex 10-50
+//READ hex F000-F010   
+//READ hex 10000-10010 
+
+
+//READ hex 3D000 //P61
+READ hex 0001      // P0 s0
+READ hex 0400       // P0 s1
+READ hex 5000      // P5
+READ hex A000      // P10
+READ hex 3A7FF-3F000   // P58 fallo de pag 63
+READ hex F000      // P15
+READ hex 11000     // P17 
+READ hex 1A000     // P26  
+
+
