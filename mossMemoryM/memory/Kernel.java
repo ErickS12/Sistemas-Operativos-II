@@ -1,0 +1,586 @@
+
+//Final
+import java.lang.Thread;
+import java.io.*;
+import java.util.*;
+
+public class Kernel extends Thread {
+  private static int virtPageNum = 63;// 31; //32 pag virtuales.
+  private static final int PHYSICAL_FRAMES = 32;// 16;
+  private String output = null;
+  private static final String lineSeparator = System.getProperty("line.separator");
+  private String command_file;
+  private String config_file;
+  private ControlPanel controlPanel;
+  private Vector memVector = new Vector();
+  private Vector instructVector = new Vector();
+  private String status;
+  private boolean doStdoutLog = false;
+  private boolean doFileLog = false;
+  public int runs;
+  public int runcycles;
+  public long block = (int) Math.pow(2, 12);
+  public static byte addressradix = 16;
+
+  public void init(String commands, String config) {
+    File f = new File(commands);
+    command_file = commands;
+    config_file = config;
+    String line;
+    String tmp = null;
+    String command = "";
+    byte R = 0;
+    byte M = 0;
+    int i = 0;
+    int j = 0;
+    int id = 0;
+    int physical = 0;
+    int physical_count = 0;
+    int inMemTime = 0;
+    int lastTouchTime = 0;
+    int map_count = 0;
+    double power = 14;
+    long high = 0;
+    long low = 0;
+    long addr = 0;
+    long address_limit = (block * (virtPageNum + 1)) - 1;
+
+    if (config != null) {
+      f = new File(config);
+      try {
+        DataInputStream in = new DataInputStream(new FileInputStream(f));
+        while ((line = in.readLine()) != null) {
+          if (line.startsWith("numpages")) {
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens()) {
+              tmp = st.nextToken();
+              virtPageNum = Common.s2i(st.nextToken()) - 1;
+              if (virtPageNum < 2 || virtPageNum > 63) {
+                System.out.println("MemoryManagement: numpages out of bounds.");
+                System.exit(-1);
+              }
+              address_limit = (block * virtPageNum + 1) - 1;
+            }
+          }
+        }
+        in.close();
+      } catch (IOException e) {
+        /* Handle exceptions */ }
+      for (i = 0; i <= virtPageNum; i++) {
+        high = (block * (i + 1)) - 1;
+        low = block * i;
+        memVector.addElement(new Page(i, -1, R, M, 0, 0, high, low));
+      }
+      try {
+        DataInputStream in = new DataInputStream(new FileInputStream(f));
+        while ((line = in.readLine()) != null) {
+          if (line.startsWith("memset")) {
+            StringTokenizer st = new StringTokenizer(line);
+            st.nextToken();
+            while (st.hasMoreTokens()) {
+              id = Common.s2i(st.nextToken());
+              tmp = st.nextToken();
+              if (tmp.startsWith("x")) {
+                physical = -1;
+              } else {
+                physical = Common.s2i(tmp);
+              }
+              if ((0 > id || id > virtPageNum) || (-1 > physical || physical > ((virtPageNum - 1) / 2))) {
+                System.out.println("MemoryManagement: Valor de página no válido en " + config);
+                System.exit(-1);
+              }
+              R = Common.s2b(st.nextToken());
+              M = Common.s2b(st.nextToken());
+              inMemTime = Common.s2i(st.nextToken());
+              lastTouchTime = Common.s2i(st.nextToken());
+
+              Page page = (Page) memVector.elementAt(id);
+              page.physical = physical;
+              page.R = R;
+              page.M = M;
+              page.inMemTime = inMemTime;
+              page.lastTouchTime = lastTouchTime;
+            }
+          }
+          if (line.startsWith("enable_logging")) {
+            // ... (código logging igual) ...
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens()) {
+              if (st.nextToken().startsWith("true"))
+                doStdoutLog = true;
+            }
+          }
+          if (line.startsWith("log_file")) {
+            // ... (código log_file igual) ...
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens())
+              tmp = st.nextToken();
+            if (tmp.startsWith("log_file")) {
+              doFileLog = false;
+              output = "tracefile";
+            } else {
+              doFileLog = true;
+              doStdoutLog = false;
+              output = tmp;
+            }
+          }
+          if (line.startsWith("pagesize")) {
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens()) {
+              tmp = st.nextToken();
+              tmp = st.nextToken();
+              if (tmp.startsWith("power")) {
+                power = (double) Integer.parseInt(st.nextToken());
+                block = (int) Math.pow(2, power);
+              } else {
+                block = Long.parseLong(tmp, 10);
+              }
+              address_limit = (block * (virtPageNum + 1)) - 1;
+            }
+            // ... (validación pagesize igual) ...
+            for (i = 0; i <= virtPageNum; i++) {
+              Page page = (Page) memVector.elementAt(i);
+              page.high = (block * (i + 1)) - 1;
+              page.low = block * i;
+            }
+          }
+          if (line.startsWith("addressradix")) {
+            // ... (validación radix igual) ...
+            StringTokenizer st = new StringTokenizer(line);
+            while (st.hasMoreTokens()) {
+              tmp = st.nextToken();
+              tmp = st.nextToken();
+              addressradix = Byte.parseByte(tmp);
+            }
+          }
+        }
+        in.close();
+      } catch (IOException e) {
+        /* Handle exceptions */ }
+    }
+
+    // --- LECTURA DE COMANDOS ---
+    f = new File(commands);
+    try {
+      DataInputStream in = new DataInputStream(new FileInputStream(f));
+      while ((line = in.readLine()) != null) {
+        if (line.startsWith("READ") || line.startsWith("WRITE")) {
+          if (line.startsWith("READ"))
+            command = "READ";
+          if (line.startsWith("WRITE"))
+            command = "WRITE";
+
+          StringTokenizer st = new StringTokenizer(line);
+          tmp = st.nextToken(); // COMANDO
+          tmp = st.nextToken(); // "hex", "bin", etc, o numero
+
+          long startAddr = 0;
+          long endAddr = 0;
+
+          if (tmp.startsWith("random")) {
+            instructVector.addElement(new Instruction(command, Common.randomLong(address_limit)));
+          } else {
+            int radix = 10;
+            String token = "";
+
+            if (tmp.startsWith("bin"))
+              radix = 2;
+            else if (tmp.startsWith("oct"))
+              radix = 8;
+            else if (tmp.startsWith("hex"))
+              radix = 16;
+
+            if (radix != 10) {
+              token = st.nextToken();
+            } else {
+              token = tmp;
+            }
+
+            if (token.contains("-")) {
+              String[] parts = token.split("-");
+              startAddr = Long.parseLong(parts[0], radix);
+              endAddr = Long.parseLong(parts[1], radix);
+
+              if (startAddr > endAddr) {
+                System.out
+                    .println("Error: Rango inválido en '" + line + "'. El inicio no puede ser mayor que el final.");
+                System.exit(-1); // Salir del programa con código de error
+              }
+
+              // Esto evita que te salga (P33, S0) o errores de memoria
+              if (endAddr > address_limit) {
+                System.out.println("Error: La dirección final " + Long.toHexString(endAddr) +
+                    " excede el límite de memoria física (" +
+                    Long.toHexString(address_limit) + ").");
+                System.exit(-1);
+              }
+              // Verifica que el rango no sea mayor al tamaño de una página (block)
+              // Cambia el if para que solo sea una advertencia o permite el rango
+              long rangeSize = endAddr - startAddr;
+              if (rangeSize > block) {
+                System.out.println("Aviso: El rango es extenso, se procesará como direcciones relativas.");
+              }
+              // ------------------------------------
+
+              command = command + "-" + endAddr;
+              addr = startAddr;
+            } else {
+              addr = Long.parseLong(token, radix);
+            }
+
+            // ESTA PARTE IMPRIME LA PARTE DE LAS PAGINAS
+            if (0 > addr || addr > address_limit) {
+              System.out.println("MemoryManagement: " + addr + ", Dirección fuera de rango en " + commands);
+            }
+            instructVector.addElement(new Instruction(command, addr));
+          }
+        }
+      }
+      in.close();
+    } catch (IOException e) {
+      /* Handle exceptions */ }
+
+    runcycles = instructVector.size();
+    if (runcycles < 1) {
+      System.out.println("Error: no instructions");
+      System.exit(-1);
+    }
+    if (doFileLog) {
+      File trace = new File(output);
+      trace.delete();
+    }
+    runs = 0;
+
+    // ------------------------- se cambio esto -------------------------//
+    int frame = 0;
+    for (i = 0; i <= virtPageNum; i++) {
+      Page page = (Page) memVector.elementAt(i);
+      if (frame < PHYSICAL_FRAMES) {
+        page.physical = frame; // marco físico real
+        frame++;
+      } else {
+        page.physical = -1; // fuera de memoria → page fault
+      }
+    }
+
+    int visualFrame = 0;
+
+    for (i = 0; i <= virtPageNum; i++) {
+      Page page = (Page) memVector.elementAt(i);
+
+      if (page.physical != -1) {
+        controlPanel.addPhysicalPage(i, page.physical);
+      } else {
+        // Solo para visualización
+        controlPanel.removePhysicalPage(i);
+        visualFrame++;
+      }
+    }
+
+  }
+
+  // ... (setControlPanel, getPage, printLogFile, run IGUALES) ...
+  public void setControlPanel(ControlPanel newControlPanel) {
+    controlPanel = newControlPanel;
+  }
+
+  public void getPage(int pageNum) {
+    Page page = (Page) memVector.elementAt(pageNum);
+    controlPanel.paintPage(page);
+  }
+
+  private void printLogFile(String message) {
+    /* ... codigo igual ... */ }
+
+  public void run() {
+    step();
+    while (runs != runcycles) {
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+      }
+      step();
+    }
+  }
+
+  //Metodo que imprime segmentos de una pagina con su estado (ocupado o libre)
+  public String obtenerEstadosSegmentosPagina(int pageNum) {
+    Page page = (Page) memVector.elementAt(pageNum);
+    StringBuilder sb = new StringBuilder();
+
+    long segmentSize = block / 2; // 2048 bytes
+    for (int s = 0; s < 2; s++) {
+      long inicio = page.low + (s * segmentSize);
+      long fin = inicio + segmentSize - 1;
+      boolean isUsed = (page.segR[s] == 1 || page.segM[s] == 1);
+
+      sb.append(
+          "Segmento " + s + ": " +
+              String.format("%04X", inicio) + " - " +
+              String.format("%04X", fin) + " " +
+              (isUsed ? "Ocupado" : "Libre") +
+              "\n");
+    }
+    return sb.toString();
+  }
+
+  private String generarTextoAging() {
+    StringBuilder sb = new StringBuilder();
+
+    for (int k = 0; k <= virtPageNum; k++) {
+        Page p = (Page) memVector.elementAt(k);
+
+        if (p.physical != -1) {
+            sb.append("Page ")
+              .append(p.id)
+              .append(" | Age: ")
+              .append(String.format("%8s",
+                  Integer.toBinaryString(p.age & 0xFF))
+                  .replace(' ', '0'))
+              .append("\n");
+        }
+    }
+
+    return sb.toString();
+}
+
+  // --- STEP MODIFICADO PARA RANGOS ---
+  public void step() {
+        Instruction instruct = (Instruction) instructVector.elementAt(runs);
+    String fullCmd = instruct.inst;
+    String realCmd = fullCmd;
+    controlPanel.pageFaultValueLabel.setText("NO");
+
+    long startAddr = instruct.addr;
+    long endAddr = startAddr;
+
+    if (fullCmd.contains("-")) {
+        String[] parts = fullCmd.split("-");
+        realCmd = parts[0];
+        endAddr = Long.parseLong(parts[1]);
+    }
+
+    controlPanel.instructionValueLabel.setText(realCmd);
+
+    if (startAddr != endAddr)
+        controlPanel.addressValueLabel.setText(
+                Long.toString(startAddr, addressradix) + "-" +
+                Long.toString(endAddr, addressradix));
+    else
+        controlPanel.addressValueLabel.setText(
+                Long.toString(startAddr, addressradix));
+
+    output = "";
+    boolean[][] usedSegments = new boolean[virtPageNum + 1][2];
+    long segmentSize = block / 2; // 2048 bytes
+    TreeMap<Integer, TreeSet<Integer>> touched = new TreeMap<>();
+
+
+    //  while (current <= endAddr)
+    int startPage = (int)(startAddr / block);
+    int endPage   = (int)(endAddr   / block);
+
+    for (int p = startPage; p <= endPage; p++) {
+
+        if (p < 0 || p > virtPageNum) {
+            System.out.println("Error: Página fuera de rango: " + p);
+            System.exit(-1);
+        }
+
+        Page page = (Page) memVector.elementAt(p);
+
+        // PAGE FAULT
+        if (page.physical == -1) {
+            controlPanel.pageFaultValueLabel.setText("YES");
+            PageFault.replacePage(memVector, virtPageNum, p, controlPanel);
+        }
+
+        long pageStartAddr = p * block;
+        long pageEndAddr   = pageStartAddr + block - 1;
+
+        long effectiveStart = Math.max(startAddr, pageStartAddr);
+        long effectiveEnd   = Math.min(endAddr, pageEndAddr);
+
+        int startSegment = (int)((effectiveStart - pageStartAddr) / segmentSize);
+        int endSegment   = (int)((effectiveEnd   - pageStartAddr) / segmentSize);
+
+        if (!touched.containsKey(p))
+            touched.put(p, new TreeSet<Integer>());
+
+        for (int s = startSegment; s <= endSegment; s++) {
+
+            if (s < 0 || s > 1) continue;
+
+            usedSegments[p][s] = true;
+            touched.get(p).add(s);
+
+            if (realCmd.startsWith("READ")) {
+                page.R = 1;
+                page.segR[s] = 1;
+            } else {
+                page.R = 1;
+                page.M = 1;
+                page.segM[s] = 1;
+            }
+        }
+
+        controlPanel.paintPage(page);
+        controlPanel.actualizarSegmentos(
+                obtenerEstadosSegmentosPagina(p));
+    }
+
+    // Calculamos la fragmentacion interna
+
+    int internalFragBytes = 0;
+
+    // BUCLE 1: CALCULAR EL TOTAL (Sumatoria)
+    for (int p = 0; p <= virtPageNum; p++) {
+      boolean pageUsed = false;
+      int segmentosLibre = 0;
+
+      // 1. Verificamos si la página se usó en esta instrucción
+      for (int s = 0; s < 2; s++) {
+        if (usedSegments[p][s]) {
+          pageUsed = true;
+        } else {
+          segmentosLibre++;
+        }
+      }
+      // 2. Si se usó
+      if (pageUsed) {
+        internalFragBytes += segmentosLibre * segmentSize;
+      }
+    }
+
+    // Generamos el mensaje que se mostrará
+
+    // 1. Agregamos el total
+    if (output == null)
+      output = ""; // Aseguramos que no sea null
+    output += "Fragmentación interna: " + internalFragBytes + " bytes\n";
+
+    // 2. Agregamos el detalle por página (BUCLE ÚNICO)
+    for (int p = 0; p <= virtPageNum; p++) {
+      boolean pageUsed = false;
+
+      // Verificamos uso
+      for (int s = 0; s < 2; s++) {
+        if (usedSegments[p][s]) {
+          pageUsed = true;
+          break;
+        }
+      }
+
+      // Solo imprimimos detalle si la página fue usada
+      if (pageUsed) {
+        output += "Página " + p + " segmentos libres: ";
+        for (int s = 0; s < 2; s++) {
+          if (!usedSegments[p][s]) {
+            output += s + " ";
+          }
+        }
+        output += "\n";
+      }
+      
+    }
+
+    // Impresion en consola
+
+    // Si la variable output tiene contenido, lo imprimimos
+    if (output != null && !output.isEmpty()) {
+      System.out.println("------ REPORTE FRAGMENTACIÓN (Paso " + runs + ") ------");
+      System.out.println(output);
+      System.out.println("----------------------------------------------------");
+    }
+
+    // ---------------------------------------------------------------//
+
+    // Construcción del resultado
+    String resultStr = "Resultado ";
+    for (Map.Entry<Integer, TreeSet<Integer>> entry : touched.entrySet()) {
+      int p = entry.getKey();
+      resultStr += "(P" + p + ", ";
+      int count = 0;
+      for (Integer s : entry.getValue()) {
+        resultStr += "S" + s;
+        if (++count < entry.getValue().size())
+          resultStr += ",";
+      }
+      resultStr += ") ";
+    }
+
+    System.out.println(resultStr);
+
+    controlPanel.paginasValueLabel.setText(resultStr);
+
+    // Logging
+    String logMsg = realCmd + " ";
+    if (addressradix == 16)
+      logMsg += "hex ";
+    logMsg += Long.toString(startAddr, addressradix);
+    if (startAddr != endAddr)
+      logMsg += "-" + Long.toString(endAddr, addressradix);
+    logMsg += " ... " + resultStr;
+
+    if (doFileLog)
+      printLogFile(logMsg);
+    if (doStdoutLog)
+      System.out.println(logMsg);
+
+    // Actualización de tiempos
+    // 4. ACTUALIZACIÓN DE AGING (Bit Shifting)
+    for (int k = 0; k <= virtPageNum; k++) {
+      Page p = (Page) memVector.elementAt(k);
+      if (p.physical != -1) {
+
+        // A) Desplazar a la derecha
+        p.age = (p.age >>> 1) & 0xFF;
+
+        // B) Si se usó (R=1), encender el bit de la izquierda
+        if (p.R == 1) {
+          p.age = p.age | 0x80;
+          p.R = 0; // Resetear R
+        }
+
+        // C) Imprimir en consola para ver los bits (DEBUG)
+        System.out.println(
+            "Page " + p.id + " | Age: " +
+                String.format("%8s",
+                    Integer.toBinaryString(p.age & 0xFF)).replace(' ', '0'));
+
+        // D) Tiempos GUI
+        p.inMemTime += 10;
+        p.lastTouchTime += 10;
+      }
+      controlPanel.actualizarAging(
+    generarTextoAging()
+);
+
+    }
+
+    runs++;
+    controlPanel.timeValueLabel.setText(Integer.toString(runs * 10) + " (ns)");
+
+  }
+
+  public void reset() {
+    memVector.removeAllElements();
+    instructVector.removeAllElements();
+    controlPanel.statusValueLabel.setText("STOP");
+    controlPanel.timeValueLabel.setText("0");
+    controlPanel.instructionValueLabel.setText("NONE");
+    controlPanel.addressValueLabel.setText("NULL");
+    controlPanel.pageFaultValueLabel.setText("NO");
+    controlPanel.virtualPageValueLabel.setText("x");
+    controlPanel.physicalPageValueLabel.setText("0");
+    controlPanel.RValueLabel.setText("0");
+    controlPanel.MValueLabel.setText("0");
+    controlPanel.inMemTimeValueLabel.setText("0");
+    controlPanel.lastTouchTimeValueLabel.setText("0");
+    controlPanel.lowValueLabel.setText("0");
+
+    controlPanel.highValueLabel.setText("0");
+    init(command_file, config_file);
+
+  }
+}
